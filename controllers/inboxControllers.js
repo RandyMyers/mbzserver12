@@ -94,3 +94,22 @@ exports.deleteInboxEmail = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to delete inbox email" });
   }
 };
+
+// GET all emails in the inbox for a specific organization
+exports.getInboxEmailsByOrganization = async (req, res) => {
+  const organizationId = req.query.organizationId || req.params.organizationId;
+  if (!organizationId) {
+    return res.status(400).json({ success: false, message: "organizationId is required" });
+  }
+  try {
+    const inboxEmails = await Inbox.find({ organization: organizationId })
+      .populate("sender replyTo organization", "name")
+      .exec();
+
+      console.log(inboxEmails);
+    res.status(200).json({ success: true, inboxEmails });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to retrieve inbox emails by organization" });
+  }
+};

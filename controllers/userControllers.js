@@ -2,6 +2,12 @@ const User = require('../models/users');
 const Organization = require('../models/organization');
 const bcrypt = require('bcryptjs');
 const cloudinary = require('cloudinary').v2;
+const Role = require('../models/role');
+const Group = require('../models/group');
+const Invitation = require('../models/invitation');
+const AuditLog = require('../models/auditLog');
+const logEvent = require('../helper/logEvent');
+
 
 // Create a new user within the same organization as the admin
 
@@ -45,6 +51,15 @@ exports.createUser = async (req, res) => {
     });
 
     await newUser.save();
+
+    await logEvent({
+      action: 'create_user',
+      user: admin._id,
+      resource: 'User',
+      resourceId: newUser._id,
+      details: { email },
+      organization: organization._id
+    });
 
     res.status(201).json({ success: true, message: "User created", user: newUser });
   } catch (error) {
@@ -106,6 +121,15 @@ exports.updateUser = async (req, res) => {
     // Save updated user
     await user.save();
 
+    await logEvent({
+      action: 'update_user',
+      user: user._id,
+      resource: 'User',
+      resourceId: user._id,
+      details: { name, username, email, department, role, status, profilePicture },
+      organization: user.organization
+    });
+
     res.status(200).json({ success: true, message: "User updated successfully", user });
   } catch (error) {
     console.error(error);
@@ -128,6 +152,15 @@ exports.updateUserStatus = async (req, res) => {
 
     user.status = status;  // 'active' or 'inactive'
     await user.save();
+
+    await logEvent({
+      action: 'update_user_status',
+      user: user._id,
+      resource: 'User',
+      resourceId: user._id,
+      details: { status },
+      organization: user.organization
+    });
 
     res.status(200).json({ success: true, message: "User status updated successfully", user });
   } catch (error) {
@@ -179,6 +212,15 @@ exports.deleteUser = async (req, res) => {
     // Delete the user
     await user.remove();
 
+    await logEvent({
+      action: 'delete_user',
+      user: user._id,
+      resource: 'User',
+      resourceId: user._id,
+      details: { organization: user.organization },
+      organization: user.organization
+    });
+
     res.status(200).json({ success: true, message: "User deleted successfully" });
   } catch (error) {
     console.error(error);
@@ -214,6 +256,15 @@ exports.updateProfilePicture = async (req, res) => {
     await user.save();
 
     console.log(user.profilePicture);
+
+    await logEvent({
+      action: 'update_profile_picture',
+      user: user._id,
+      resource: 'User',
+      resourceId: user._id,
+      details: { profilePicture: user.profilePicture },
+      organization: user.organization
+    });
 
     res.status(200).json({
       success: true,

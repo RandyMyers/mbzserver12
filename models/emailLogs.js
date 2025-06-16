@@ -29,6 +29,17 @@ const EmailLogsSchema = new mongoose.Schema(
     sentAt: {
       type: Date, // Timestamp when the email was sent
     },
+    // --- Analytics fields ---
+    deviceType: {
+      type: String, // e.g., 'mobile', 'desktop', 'tablet'
+    },
+    client: {
+      type: String, // e.g., 'Gmail', 'Outlook', 'Apple Mail'
+    },
+    country: {
+      type: String, // e.g., 'USA', 'Nigeria', 'UK'
+    },
+    // --- End analytics fields ---
     createdAt: {
       type: Date,
       default: Date.now, // Automatically set to the current timestamp

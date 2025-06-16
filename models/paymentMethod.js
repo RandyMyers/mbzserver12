@@ -9,7 +9,7 @@ const paymentMethodSchema = new mongoose.Schema({
   },
   methodType: {
     type: String,
-    enum: ['Bank Transfer', 'Crypto'],
+    enum: ['Bank Transfer', 'Crypto', 'Card'],
     required: true,
   },
   currency: {
@@ -50,6 +50,15 @@ const paymentMethodSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  // Card payment gateway type (for card payments)
+  cardGateway: {
+    type: String,
+    enum: ['flutterwave', 'paystack'],
+  },
+  // Optionally, reference to a saved card (for future use)
+  cardReference: {
+    type: String,
   },
 });
 

@@ -245,3 +245,145 @@ exports.deleteAllProductsByStore = async (req, res) => {
   }
 };
 
+
+// Get total products count for organization
+exports.getTotalProducts = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const count = await Inventory.countDocuments({ organizationId });
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to get total products" });
+  }
+};
+
+// Get in-stock items count for organization
+exports.getInStockItems = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const count = await Inventory.countDocuments({ 
+      organizationId,
+      stock_status: "instock" 
+    });
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to get in-stock items" });
+  }
+};
+
+// Get low-stock items count for organization
+exports.getLowStockItems = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const count = await Inventory.countDocuments({ 
+      organizationId,
+      stock_status: "low-stock" 
+    });
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to get low-stock items" });
+  }
+};
+
+// Get out-of-stock items count for organization
+exports.getOutOfStockItems = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const count = await Inventory.countDocuments({ 
+      organizationId,
+      stock_status: "outofstock" 
+    });
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to get out-of-stock items" });
+  }
+};
+
+// Get category count for organization
+exports.getCategoryCount = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const products = await Inventory.find({ organizationId }, { categories: 1 });
+    const uniqueCategories = [...new Set(products.flatMap(p => p.categories?.map(c => c.name)))];
+    res.status(200).json({ success: true, count: uniqueCategories.length });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to get category count" });
+  }
+};
+
+// Get store count for organization (unchanged)
+exports.getStoreCount = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const stores = await Inventory.distinct("storeId", { organizationId });
+    res.status(200).json({ success: true, count: stores.length });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to get store count" });
+  }
+};
+
+// Get total inventory value for organization
+exports.getTotalInventoryValue = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const products = await Inventory.find({ organizationId }, { price: 1, stock_quantity: 1 });
+    const totalValue = products.reduce((sum, product) => {
+      const price = parseFloat(product.price) || 0;
+      const stock = parseInt(product.stock_quantity) || 0;
+      return sum + (price * stock);
+    }, 0);
+    
+    res.status(200).json({ success: true, totalValue });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to get total inventory value" });
+  }
+};
+
+// Get average product price for organization
+exports.getAveragePrice = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const products = await Inventory.find({ organizationId }, { price: 1 });
+    const totalProducts = products.length;
+    const avgPrice = totalProducts > 0 
+      ? products.reduce((sum, product) => sum + (parseFloat(product.price) || 0), 0) / totalProducts 
+      : 0;
+    
+    res.status(200).json({ success: true, avgPrice });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to get average price" });
+  }
+};
+
+// Get on-sale products count for organization
+exports.getOnSaleCount = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const count = await Inventory.countDocuments({ 
+      organizationId,
+      on_sale: true 
+    });
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to get on-sale products" });
+  }
+};
+
+// Get average product rating for organization
+exports.getAverageRating = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const products = await Inventory.find({ 
+      organizationId,
+      average_rating: { $gt: 0 } 
+    }, { average_rating: 1 });
+    
+    const avgRating = products.length > 0
+      ? products.reduce((sum, p) => sum + parseFloat(p.average_rating || "0"), 0) / products.length
+      : 0;
+    
+    res.status(200).json({ success: true, avgRating });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to get average rating" });
+  }
+};

@@ -1,5 +1,6 @@
 const Product = require('../models/product'); // Import Product model
 const SubscriptionPlan = require('../models/subscriptionPlans'); // Import SubscriptionPlan model (assuming it exists)
+const logEvent = require('../helper/logEvent');
 
 
   // Create a new product
@@ -22,6 +23,14 @@ const SubscriptionPlan = require('../models/subscriptionPlans'); // Import Subsc
       });
 
       await newProduct.save();
+      await logEvent({
+        action: 'create_product',
+        user: req.user._id,
+        resource: 'Product',
+        resourceId: newProduct._id,
+        details: { name: newProduct.name, price: newProduct.price },
+        organization: req.user.organization
+      });
       res.status(201).json({ message: "Product created successfully", product: newProduct });
     } catch (error) {
       console.error(error);
@@ -69,12 +78,21 @@ const SubscriptionPlan = require('../models/subscriptionPlans'); // Import Subsc
       }
 
       // Update product fields
+      const oldProduct = { ...product };
       product.name = name || product.name;
       product.description = description || product.description;
       product.isActive = isActive !== undefined ? isActive : product.isActive;
       product.updatedAt = Date.now();
 
       await product.save();
+      await logEvent({
+        action: 'update_product',
+        user: req.user._id,
+        resource: 'Product',
+        resourceId: product._id,
+        details: { before: oldProduct, after: product },
+        organization: req.user.organization
+      });
       res.status(200).json({ message: "Product updated successfully", product });
     } catch (error) {
       console.error(error);
@@ -93,6 +111,14 @@ const SubscriptionPlan = require('../models/subscriptionPlans'); // Import Subsc
       }
 
       await product.remove();
+      await logEvent({
+        action: 'delete_product',
+        user: req.user._id,
+        resource: 'Product',
+        resourceId: product._id,
+        details: { name: product.name },
+        organization: req.user.organization
+      });
       res.status(200).json({ message: "Product deleted successfully" });
     } catch (error) {
       console.error(error);

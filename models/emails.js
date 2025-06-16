@@ -49,7 +49,7 @@ const EmailSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["trash", "draft", "scheduled","sent"], // Allowed values
+      enum: ["trash", "drafts", "scheduled","sent"], // Allowed values
       default: "Draft", // Default value if none is provided
       required: true,
     },

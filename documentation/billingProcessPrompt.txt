@@ -1,0 +1,91 @@
+Here’s a summary of the current state and what’s needed for your subscription payment process, based on the code and documentation analyzed:
+1. Current BillingPage and Connected Components
+BillingPage uses mock data for plans and pricing.
+CurrentPlanCard and PlanCard both use a SelectPaymentMethodModal to trigger payment.
+SelectPaymentMethodModal currently only offers “Card” and “Bank Transfer” (no crypto yet), and routes to /dashboard/billing/payment/{method} with plan and amount in state.
+No real payment gateway integration is present yet—the card and bank transfer flows are simulated.
+2. Redux Store and API Layer
+There are actions and reducers for payment, paymentMethod, subscription, and subscriptionPlan.
+The paymentMethod model in the backend is for storing user bank/crypto details, not for storing payment gateway keys.
+There is no model for storing payment gateway (Flutterwave/Paystack) public/secret keys yet.
+3. Backend Models
+subscriptionPlans: Stores plan details and pricing.
+subscriptions: Tracks user subscriptions, status, and payment state.
+paymentMethod: Stores user’s bank/crypto details, not gateway keys.
+4. Payment Gateway Integration Docs
+Flutterwave: Use the flutterwave-react-v3 package. The public key is required in the frontend config.
+Paystack: Use the @paystack/inline-js package or script. The public key is required in the frontend config.
+5. What’s Needed for Your Requirements
+A. Model for Payment Gateway Keys
+You need a new model (e.g., PaymentGatewayKey) to store public/secret keys for each gateway (Flutterwave, Paystack, etc.), with fields for type, publicKey, secretKey, and isActive.
+B. API Endpoints
+Endpoints to get the public key for a gateway (for frontend use).
+Endpoints to initiate a payment (create a transaction, get a reference, etc.).
+Webhook endpoints to receive payment status updates from gateways.
+C. Frontend Payment Modal
+When user clicks “Upgrade” or “Renew”, show a modal with:
+Card (Flutterwave, Paystack)
+Bank Transfer (show bank details for USD, EUR, GBP, and upload screenshot)
+Crypto (BTC/USDT, to be added later)
+On selecting a card gateway, fetch the public key from the backend and launch the respective checkout.
+On success/failure, redirect to the appropriate page and update subscription status.
+D. Subscription Management
+After payment success, update the user’s subscription in the backend (activate, set renewal date, etc.).
+On failure, mark as failed.
+6. Next Steps (Coding Plan)
+Backend
+Create PaymentGatewayKey model (type, publicKey, secretKey, isActive).
+Create endpoints:
+GET /api/payment-gateways/:type/public-key (returns public key for Flutterwave/Paystack)
+POST /api/payments/initiate (creates a payment record, returns tx_ref/reference)
+POST /api/payments/webhook/:gateway (handles payment status updates)
+Update subscription on payment success.
+Frontend
+Update SelectPaymentMethodModal:
+Add options for Flutterwave, Paystack, Bank Transfer, Crypto.
+On card selection, fetch public key from backend, then launch checkout.
+Implement Flutterwave/Paystack checkout:
+Use the respective React SDKs, passing the public key from backend.
+On success/failure, call backend to update subscription/payment status.
+Bank Transfer:
+Show bank details, allow screenshot upload, and submit for manual verification.
+Crypto:
+Placeholder for now.
+7. Security Note
+Never expose secret keys to the frontend. Only public keys are sent to the frontend for checkout.
+8. Ready to Start?
+If you want, I can start by drafting the backend model and endpoints for payment gateway keys, then move to the frontend modal and payment logic.
+Let me know if you want to proceed in this order or have a specific part you want to start with!
+
+
+Ensure subscription is updated on payment success/failure (including via webhook).
+Add/fix CRUD for subscription plans and subscriptions.
+Add admin endpoints for managing plans and gateway keys if needed.
+Routes:
+Ensure all routes are registered and protected as needed.
+Add missing routes for subscription and plan CRUD, assignment, renewal, and cancellation.
+Frontend
+Services:
+Create subscriptionServices.js and subscriptionPlanServices.js for all CRUD and assignment endpoints.
+Move all API calls from components to services.
+Redux:
+Ensure all async flows (loading, success, error) are handled in reducers.
+All actions should use services, not direct fetch.
+Types should be grouped by domain.
+Dashboard Pages/Components:
+All data should be loaded via Redux, not direct fetch.
+All user actions (upgrade, renew, pay, upload proof) should be functional and update state/UI.
+Ensure all payment flows (card, bank, crypto) are fully functional and update UI/state.
+Ensure all subscription flows (upgrade, renew, cancel) are fully functional and update UI/state.
+Handle all error/loading states in UI.
+Action Plan
+Backend
+[ ] Audit and fix all models for relationships and fields.
+[ ] Complete/fix all controllers for payment, subscription, and plan logic (including webhooks and status updates).
+[ ] Ensure all routes are present and correct.
+Frontend
+[ ] Create/fix services for subscription and plan CRUD/assignment.
+[ ] Refactor all Redux actions to use services.
+[ ] Refactor all dashboard pages/components to use Redux and services.
+[ ] Add/fix admin UI for plans and gateway keys.
+[ ] Ensure all payment and subscription flows are robust and user-friendly.

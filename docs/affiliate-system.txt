@@ -1,0 +1,254 @@
+AFFILIATE SYSTEM DOCUMENTATION
+============================
+
+MODELS
+------
+
+1. Affiliate Model (affiliateModel.js)
+   - Stores affiliate information including:
+     * User reference
+     * Status (active/inactive/suspended)
+     * Commission rate
+     * Referral code
+     * Settings
+     * Payout settings
+     * Performance metrics
+     * Reports
+
+2. Referral Model (referralModel.js)
+   - Tracks referral relationships including:
+     * Referrer (affiliate)
+     * Referred user
+     * Status
+     * Conversion details
+     * Commission earned
+
+3. Commission Model (commissionModel.js)
+   - Manages commission transactions:
+     * Affiliate reference
+     * Amount
+     * Status
+     * Type
+     * Related order/referral
+     * Payment details
+
+4. Payout Model (payoutModel.js)
+   - Handles payout requests and transactions:
+     * Affiliate reference
+     * Amount
+     * Status
+     * Payment method
+     * Transaction details
+     * Timestamps
+
+5. MarketingMaterial Model (marketingMaterialModel.js)
+   - Stores marketing assets:
+     * Type (banner, link, etc.)
+     * Content
+     * Status
+     * Usage statistics
+     * Affiliate reference
+
+CONTROLLERS
+-----------
+
+1. Affiliate Controller (affiliateController.js)
+   - Handles affiliate management:
+     * CRUD operations for affiliates
+     * Status updates
+     * Commission rate management
+     * Profile management
+     * Settings management
+     * Performance tracking
+     * Report generation
+
+2. Referral Controller (referralController.js)
+   - Manages referral operations:
+     * Create and track referrals
+     * Update referral status
+     * Calculate commissions
+     * Generate referral reports
+
+3. Commission Controller (commissionController.js)
+   - Handles commission operations:
+     * Calculate commissions
+     * Track commission status
+     * Process commission payments
+     * Generate commission reports
+
+4. Payout Controller (payoutController.js)
+   - Manages payout operations:
+     * Create payout requests
+     * Process payouts
+     * Track payout status
+     * Generate payout reports
+
+5. MarketingMaterial Controller (marketingMaterialController.js)
+   - Handles marketing materials:
+     * Create and manage materials
+     * Track usage statistics
+     * Generate material reports
+
+ROUTES
+------
+
+1. Admin Routes (/api/v1/admin/affiliates)
+   - GET / - Get all affiliates
+   - GET /:id - Get single affiliate
+   - POST / - Create new affiliate
+   - PATCH /:id - Update affiliate
+   - DELETE /:id - Delete affiliate
+   - PATCH /:id/status - Update affiliate status
+   - PATCH /:id/commission-rate - Update commission rate
+
+2. Affiliate Routes (/api/v1/affiliate)
+   - GET /dashboard - Get dashboard overview
+   - GET /profile - Get affiliate profile
+   - PATCH /profile - Update affiliate profile
+   - GET /settings - Get affiliate settings
+   - PATCH /settings - Update affiliate settings
+   - GET /payout-settings - Get payout settings
+   - PATCH /payout-settings - Update payout settings
+   - GET /performance - Get performance metrics
+   - GET /reports - Get affiliate reports
+
+3. Referral Routes (/api/v1/affiliate/referrals)
+   - GET / - Get all referrals
+   - GET /:id - Get single referral
+   - POST / - Create new referral
+   - PATCH /:id - Update referral status
+
+4. Commission Routes (/api/v1/affiliate/commissions)
+   - GET / - Get all commissions
+   - GET /:id - Get single commission
+   - GET /pending - Get pending commissions
+   - GET /paid - Get paid commissions
+
+5. Payout Routes (/api/v1/affiliate/payouts)
+   - GET / - Get all payouts
+   - GET /:id - Get single payout
+   - POST / - Request payout
+   - GET /pending - Get pending payouts
+   - GET /completed - Get completed payouts
+
+6. Marketing Material Routes (/api/v1/affiliate/marketing)
+   - GET / - Get all materials
+   - GET /:id - Get single material
+   - POST / - Create new material
+   - PATCH /:id - Update material
+   - DELETE /:id - Delete material
+   - GET /stats - Get material statistics
+
+API ACCESS REQUIREMENTS
+----------------------
+
+1. Authentication
+   - All routes require a valid JWT token in the Authorization header
+   - Format: Authorization: Bearer <token>
+
+2. Authorization
+   - Admin routes require admin role
+   - Affiliate routes require affiliate role
+   - Some routes may have additional role requirements
+
+3. Rate Limiting
+   - Standard rate limits apply to all routes
+   - Some routes may have stricter limits
+
+4. Request Headers
+   - Content-Type: application/json
+   - Authorization: Bearer <token>
+   - Accept: application/json
+
+5. Response Format
+   - Success: { status: 'success', data: { ... } }
+   - Error: { status: 'error', message: '...' }
+
+6. Pagination
+   - List endpoints support pagination
+   - Query parameters: page, limit
+   - Example: /api/v1/affiliate/commissions?page=1&limit=10
+
+7. Filtering
+   - Most list endpoints support filtering
+   - Query parameters vary by endpoint
+   - Example: /api/v1/affiliate/commissions?status=pending
+
+8. Sorting
+   - List endpoints support sorting
+   - Query parameter: sort
+   - Example: /api/v1/affiliate/commissions?sort=-createdAt
+
+ERROR CODES
+-----------
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 429: Too Many Requests
+- 500: Internal Server Error
+
+EXAMPLE API CALLS
+----------------
+
+1. Get Affiliate Profile
+   ```
+   GET /api/v1/affiliate/profile
+   Headers:
+     Authorization: Bearer <token>
+     Accept: application/json
+   ```
+
+2. Update Commission Rate (Admin)
+   ```
+   PATCH /api/v1/admin/affiliates/:id/commission-rate
+   Headers:
+     Authorization: Bearer <token>
+     Content-Type: application/json
+   Body:
+     {
+       "commissionRate": 15
+     }
+   ```
+
+3. Request Payout
+   ```
+   POST /api/v1/affiliate/payouts
+   Headers:
+     Authorization: Bearer <token>
+     Content-Type: application/json
+   Body:
+     {
+       "amount": 1000,
+       "paymentMethod": "bank_transfer",
+       "accountDetails": {
+         "accountNumber": "1234567890",
+         "bankName": "Example Bank"
+       }
+     }
+   ```
+
+4. Get Performance Metrics
+   ```
+   GET /api/v1/affiliate/performance?period=monthly
+   Headers:
+     Authorization: Bearer <token>
+     Accept: application/json
+   ```
+
+5. Create Marketing Material
+   ```
+   POST /api/v1/affiliate/marketing
+   Headers:
+     Authorization: Bearer <token>
+     Content-Type: application/json
+   Body:
+     {
+       "type": "banner",
+       "content": {
+         "imageUrl": "https://example.com/banner.jpg",
+         "link": "https://example.com/ref/123"
+       },
+       "status": "active"
+     }
+   ``` 

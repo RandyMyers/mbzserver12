@@ -3,6 +3,8 @@ const path = require('path');
 const Store = require('../models/store');
 const Organization = require('../models/organization');
 const Order = require('../models/order');
+const mongoose = require('mongoose');
+const logEvent = require('../helper/logEvent');
 
 exports.syncOrders = async (req, res) => {
   try {
@@ -82,6 +84,14 @@ exports.createOrder = async (req, res) => {
     });
 
     const savedOrder = await newOrder.save();
+    await logEvent({
+      action: 'create_order',
+      user: req.user._id,
+      resource: 'Order',
+      resourceId: savedOrder._id,
+      details: { ...savedOrder.toObject() },
+      organization: req.user.organization
+    });
     res.status(201).json({ success: true, order: savedOrder });
   } catch (error) {
     console.error(error);
@@ -171,6 +181,15 @@ exports.updateOrder = async (req, res) => {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
 
+    await logEvent({
+      action: 'update_order',
+      user: req.user._id,
+      resource: 'Order',
+      resourceId: updatedOrder._id,
+      details: { before: updatedOrder.toObject(), after: updatedOrder },
+      organization: req.user.organization
+    });
+
     res.status(200).json({ success: true, order: updatedOrder });
   } catch (error) {
     console.error(error);
@@ -190,5 +209,454 @@ exports.deleteOrder = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Failed to delete order" });
+  }
+};
+
+// Helper function for date filtering - moved to top
+function getDateFilter(timeRange) {
+  const now = new Date();
+  let startDate;
+  
+  switch(timeRange) {
+    case '7d':
+      startDate = new Date(now.setDate(now.getDate() - 7));
+      break;
+    case '30d':
+      startDate = new Date(now.setDate(now.getDate() - 30));
+      break;
+    case '90d':
+      startDate = new Date(now.setDate(now.getDate() - 90));
+      break;
+    case '1y':
+      startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+      break;
+    default:
+      startDate = new Date(0); // All time
+  }
+  
+  return { $gte: startDate };
+}
+
+// 1. Cross-Store Performance Analytics (without time range filter)
+exports.getCrossStorePerformance = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+  
+    const result = await Order.aggregate([
+      { $match: { 
+        organizationId: new mongoose.Types.ObjectId(organizationId)
+        // Removed the date_created filter
+      }},
+      { $group: {
+        _id: "$storeId",
+        orderCount: { $sum: 1 },
+        totalRevenue: { $sum: { $toDouble: "$total" } },
+        avgOrderValue: { $avg: { $toDouble: "$total" } },
+        statusCounts: { $push: "$status" }
+      }},
+      { $project: {
+        storeId: "$_id",
+        orderCount: 1,
+        totalRevenue: 1,
+        avgOrderValue: 1,
+        statusDistribution: {
+          $arrayToObject: {
+            $map: {
+              input: { $setUnion: "$statusCounts" },
+              as: "status",
+              in: { 
+                k: "$$status", 
+                v: { 
+                  $size: { 
+                    $filter: { 
+                      input: "$statusCounts", 
+                      as: "s", 
+                      cond: { $eq: ["$$s", "$$status"] } 
+                    } 
+                  } 
+                } 
+              }
+            }
+          }
+        }
+      }}
+    ]);
+
+    res.json({
+      summary: {
+        totalOrders: result.reduce((sum, store) => sum + store.orderCount, 0),
+        totalRevenue: result.reduce((sum, store) => sum + store.totalRevenue, 0),
+        avgOrderValue: result.reduce((sum, store) => sum + store.avgOrderValue, 0) / (result.length || 1) // Added protection against division by zero
+      },
+      stores: result
+    });
+  } catch (error) {
+    console.error('Error in getCrossStorePerformance:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 2. Temporal Analytics
+exports.getTemporalAnalytics = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const { timeRange = '30d' } = req.query;
+    const dateFilter = getDateFilter(timeRange);
+    
+    // Daily trends
+    const daily = await Order.aggregate([
+      { $match: { 
+        organizationId: new mongoose.Types.ObjectId(organizationId),
+        date_created: dateFilter 
+      }},
+      { $group: {
+        _id: { $dateToString: { format: "%Y-%m-%d", date: "$date_created" } },
+        orders: { $sum: 1 },
+        revenue: { $sum: { $toDouble: "$total" } }
+      }},
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Hourly patterns
+    const hourly = await Order.aggregate([
+      { $match: { 
+        organizationId: new mongoose.Types.ObjectId(organizationId),
+        date_created: dateFilter 
+      }},
+      { $group: {
+        _id: { $hour: "$date_created" },
+        orders: { $sum: 1 }
+      }},
+      { $sort: { _id: 1 } }
+    ]);
+
+    res.json({ dailyTrends: daily, hourlyPatterns: hourly });
+  } catch (error) {
+    console.error('Error in getTemporalAnalytics:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 3. Customer Insights
+exports.getCustomerAnalytics = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const { limit = 10 } = req.query;
+    
+    const data = await Order.aggregate([
+      { $match: { organizationId: new mongoose.Types.ObjectId(organizationId) } },
+      { $group: {
+        _id: "$customer_id",
+        totalSpent: { $sum: { $toDouble: "$total" } },
+        orderCount: { $sum: 1 },
+        firstOrderDate: { $min: "$date_created" },
+        lastOrderDate: { $max: "$date_created" },
+        storesUsed: { $addToSet: "$storeId" }
+      }},
+      { $project: {
+        customerId: "$_id",
+        totalSpent: 1,
+        orderCount: 1,
+        storesUsed: 1,
+        avgDaysBetweenOrders: {
+          $divide: [
+            { $divide: [
+              { $subtract: ["$lastOrderDate", "$firstOrderDate"] },
+              1000 * 60 * 60 * 24
+            ]},
+            { $max: [1, { $subtract: ["$orderCount", 1] }] }
+          ]
+        }
+      }},
+      { $sort: { totalSpent: -1 } },
+      { $limit: parseInt(limit) }
+    ]);
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in getCustomerAnalytics:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 4. Product Performance
+exports.getProductPerformance = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    const { timeRange = '30d' } = req.query;
+    const dateFilter = getDateFilter(timeRange);
+    
+    const data = await Order.aggregate([
+      { $match: { 
+        organizationId: new mongoose.Types.ObjectId(organizationId),
+        date_created: dateFilter 
+      }},
+      { $unwind: "$line_items" },
+      { $group: {
+        _id: "$line_items.product_id",
+        name: { $first: "$line_items.name" },
+        totalSold: { $sum: "$line_items.quantity" },
+        totalRevenue: { $sum: { $multiply: [
+          { $toDouble: "$line_items.price" },
+          "$line_items.quantity"
+        ]}},
+        storesSoldIn: { $addToSet: "$storeId" }
+      }},
+      { $sort: { totalRevenue: -1 } }
+    ]);
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in getProductPerformance:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 5. Financial Analytics
+exports.getFinancialAnalytics = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    const result = await Order.aggregate([
+      { $match: { organizationId: new mongoose.Types.ObjectId(organizationId) } },
+      { $group: {
+        _id: null,
+        totalRevenue: { $sum: { $toDouble: "$total" } },
+        totalTax: { $sum: { $toDouble: "$total_tax" } },
+        totalShipping: { $sum: { $toDouble: "$shipping_total" } },
+        totalDiscounts: { $sum: { $toDouble: "$discount_total" } },
+        paymentMethods: { $push: "$payment_method" }
+      }}
+    ]);
+
+    const paymentMethodDistribution = result[0]?.paymentMethods?.reduce((acc, method) => {
+      acc[method] = (acc[method] || 0) + 1;
+      return acc;
+    }, {}) || {};
+
+    res.json({
+      ...result[0],
+      paymentMethodDistribution,
+      discountEffectiveness: result[0]?.totalDiscounts > 0 ? 
+        (result[0].totalDiscounts / result[0].totalRevenue) * 100 : 0
+    });
+  } catch (error) {
+    console.error('Error in getFinancialAnalytics:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 6. Operational Metrics
+exports.getOperationalMetrics = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    const data = await Order.aggregate([
+      { $match: { 
+        organizationId: new mongoose.Types.ObjectId(organizationId),
+        date_completed: { $exists: true },
+        date_created: { $exists: true }
+      }},
+      { $project: {
+        storeId: 1,
+        processingTime: {
+          $divide: [
+            { $subtract: ["$date_completed", "$date_created"] },
+            1000 * 60 * 60 // Convert to hours
+          ]
+        }
+      }},
+      { $group: {
+        _id: "$storeId",
+        avgProcessingTime: { $avg: "$processingTime" }
+      }}
+    ]);
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in getOperationalMetrics:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 7. Geospatial Analysis
+exports.getGeospatialAnalytics = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    const data = await Order.aggregate([
+      { $match: { 
+        organizationId: new mongoose.Types.ObjectId(organizationId),
+        "shipping.country": { $exists: true }
+      }},
+      { $group: {
+        _id: "$shipping.country",
+        orderCount: { $sum: 1 },
+        avgShippingCost: { $avg: { $toDouble: "$shipping_total" } }
+      }},
+      { $sort: { orderCount: -1 } }
+    ]);
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in getGeospatialAnalytics:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 8. Status Distribution Analytics
+exports.getStatusDistribution = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    const data = await Order.aggregate([
+      { $match: { organizationId: new mongoose.Types.ObjectId(organizationId) } },
+      { $group: {
+        _id: "$status",
+        count: { $sum: 1 }
+      }},
+      { $project: {
+        status: "$_id",
+        count: 1,
+        _id: 0
+      }}
+    ]);
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error in getStatusDistribution:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 9. Sales Funnel Analysis
+exports.getSalesFunnel = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    const data = await Order.aggregate([
+      { $match: { organizationId: new mongoose.Types.ObjectId(organizationId) } },
+      { $facet: {
+        totalVisitors: [
+          { $group: { _id: null, count: { $sum: 1 } } }
+        ],
+        initiatedCheckout: [
+          { $match: { status: { $in: ['pending', 'processing', 'on-hold'] } } },
+          { $group: { _id: null, count: { $sum: 1 } } }
+        ],
+        completedPurchases: [
+          { $match: { status: 'completed' } },
+          { $group: { _id: null, count: { $sum: 1 } } }
+        ]
+      }},
+      { $project: {
+        totalVisitors: { $arrayElemAt: ["$totalVisitors.count", 0] },
+        initiatedCheckout: { $arrayElemAt: ["$initiatedCheckout.count", 0] },
+        completedPurchases: { $arrayElemAt: ["$completedPurchases.count", 0] }
+      }}
+    ]);
+
+    res.json(data[0]);
+  } catch (error) {
+    console.error('Error in getSalesFunnel:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 10. Customer Lifetime Value
+exports.getCustomerLTV = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    const data = await Order.aggregate([
+      { $match: { organizationId: new mongoose.Types.ObjectId(organizationId) } },
+      { $group: {
+        _id: "$customer_id",
+        totalSpent: { $sum: { $toDouble: "$total" } },
+        firstPurchase: { $min: "$date_created" },
+        lastPurchase: { $max: "$date_created" }
+      }},
+      { $group: {
+        _id: null,
+        avgLTV: { $avg: "$totalSpent" },
+        medianLTV: { 
+          $median: {
+            input: "$totalSpent",
+            method: 'approximate'
+          }
+        },
+        avgCustomerLifespan: {
+          $avg: {
+            $divide: [
+              { $subtract: ["$lastPurchase", "$firstPurchase"] },
+              1000 * 60 * 60 * 24 // Convert to days
+            ]
+          }
+        }
+      }}
+    ]);
+
+    res.json(data[0]);
+  } catch (error) {
+    console.error('Error in getCustomerLTV:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// In cancelOrder (after cancelling the order)
+exports.cancelOrder = async (req, res) => {
+  const { orderId } = req.params;
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    order.status = 'cancelled';
+    await order.save();
+
+    await logEvent({
+      action: 'cancel_order',
+      user: req.user._id,
+      resource: 'Order',
+      resourceId: order._id,
+      details: { ...order.toObject() },
+      organization: req.user.organization
+    });
+
+    res.status(200).json({ success: true, order: order });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to cancel order" });
+  }
+};
+
+// In refundOrder (after refunding the order)
+exports.refundOrder = async (req, res) => {
+  const { orderId, refundAmount, reason } = req.body;
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    order.status = 'refunded';
+    order.refund_amount = refundAmount;
+    order.refund_reason = reason;
+    await order.save();
+
+    await logEvent({
+      action: 'refund_order',
+      user: req.user._id,
+      resource: 'Order',
+      resourceId: order._id,
+      details: { refundAmount, reason },
+      organization: req.user.organization
+    });
+
+    res.status(200).json({ success: true, order: order });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to refund order" });
   }
 };

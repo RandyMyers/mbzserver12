@@ -15,7 +15,7 @@ const userRoutes = require('./routes/userRoutes');
 //const policiesRoutes = require('./routes/policyRoutes');
 const authRoutes = require('./routes/authRoutes');
 //const blogRoutes = require('./routes/blogRoutes');
-//const affiliateRoutes = require('./routes/affiliateRoutes');
+const affiliateRoutes = require('./routes/affiliateRoutes');
 //const visitorRoutes = require('./routes/visitorRoutes');
 //const interactionRoutes = require('./routes/interactionRoutes');
 //const triggerRoutes = require('./routes/triggerRoutes');
@@ -50,9 +50,20 @@ const taskRoutes = require('./routes/taskRoutes');
 //const subscriptionRoutes = require('./routes/subscriptionRoutes');  // New Subscription Routes
 //const discountRoutes = require('./routes/discountRoutes');  // New Discount Routes
 //const discountUsageRoutes = require('./routes/discountUsageRoutes');  // New Discount Usage Routes
-//const paymentRoutes = require('./routes/paymentRoutes');  // New Payment Routes
+const paymentRoutes = require('./routes/paymentRoutes');
 //const subscriptionPlanRoutes = require('./routes/subscriptionPlanRoutes');  // New Subscription Plan Routes
 //const paymentLinkRoutes = require('./routes/paymentLinkRoutes');  // New Payment Link Routes
+const websiteRoutes = require('./routes/websiteRoutes');
+const templateRoutes = require('./routes/templateRoutes');
+const progressRoutes = require('./routes/websiteProgressRoutes');
+const exchangeRateRoutes = require('./routes/exchangeRateRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
+const advancedAnalyticsRoutes = require('./routes/advancedAnalyticsRoutes');
+const callSchedulerRoutes = require('./routes/callSchedulerRoutes');
+const supportRoutes = require('./routes/supportRoutes');
+const paymentGatewayKeyRoutes = require('./routes/paymentGatewayKeyRoutes');
+const chatIntegrationRoutes = require('./routes/chatIntegrationRoutes');
+const campaignRoutes = require('./routes/campaignRoutes');
 
 dotenv.config();
 
@@ -98,6 +109,7 @@ app.use(
 // Using imported routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/affiliates', affiliateRoutes);
 //app.use('/api/sites', siteRoutes);
 //app.use('/api/triggers', triggerRoutes);
 //app.use('/api/actions', actionRoutes);
@@ -125,19 +137,30 @@ app.use('/api/inbox', inboxRoutes);
 app.use('/api/receivers', receiverRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/websites', websiteRoutes);
+app.use('/api/website/templates', templateRoutes);
+app.use('/api/website/progress', progressRoutes);
 //app.use('/api/payment/method', paymentMethodRoutes);
-
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/exchange-rates', exchangeRateRoutes);
 app.use('/api/senders', senderRoutes);
+//app.use('/api/senders', senderRoutes);
 //app.use('/api/sms/templates', smsTemplateRoutes);
 app.use('/api/tasks', taskRoutes);
 //app.use('/api/workflows', workflowRoutes);
 //app.use('/api/cart', cartRoutes);
-//app.use('/api/subscriptions', subscriptionRoutes);
-//app.use('/api/payments', paymentRoutes);
-//app.use('/api/plans', subscriptionPlanRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/plans', require('./routes/subscriptionPlansRoutes'));
+app.use('/api/subscriptions', require('./routes/subscriptionsRoutes'));
+app.use('/api/advanced-analytics', advancedAnalyticsRoutes);
+app.use('/api/calls', callSchedulerRoutes);
+app.use('/api/support', supportRoutes);
+app.use('/api/payment-gateways', paymentGatewayKeyRoutes);
+app.use('/api/chat-integrations', chatIntegrationRoutes);
+app.use('/api/campaigns', campaignRoutes);
 
-// Start the cron job for receiver emails
-//receiverEvent.scheduleReceiverEmails();
+//Start the cron job for receiver emails
+receiverEvent.scheduleReceiverEmails();
 // Start the cron job to update exchange rates
 
 

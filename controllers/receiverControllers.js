@@ -4,7 +4,7 @@ const Receiver = require("../models/receiver"); // Adjust the path as necessary
 exports.createReceiver = async (req, res) => {
   try {
     const {
-      organization,
+      organizationId,
       userId,
       name,
       email,
@@ -19,7 +19,7 @@ exports.createReceiver = async (req, res) => {
     console.log(req.body)
 
     const newReceiver = new Receiver({
-      organization,
+      organization: organizationId,
       userId,
       name,
       email,
@@ -71,7 +71,9 @@ exports.getReceiverById = async (req, res) => {
 // UPDATE a Receiver by ID
 exports.updateReceiver = async (req, res) => {
   const { receiverId } = req.params;
-  const updates = req.body;
+  const updates = { ...req.body };
+  if (req.body.organizationId) updates.organization = req.body.organizationId;
+  if (req.body.userId) updates.userId = req.body.userId;
 
   try {
     const updatedReceiver = await Receiver.findByIdAndUpdate(receiverId, updates, {

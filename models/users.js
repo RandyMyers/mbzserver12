@@ -22,20 +22,28 @@ const UserSchema = new Schema({
       required: true,
     },
     role: {
-      type: String,
-      enum: [
-        'super-admin', 
-        'admin', 
-        'customer-support-agent', 
-        'sales-agent', 
-        'billing-manager', 
-        'customer-support-manager',
-        'sales-manager',
-        'manager', 
-        'guest'
-      ],
-      default: 'admin',
+      type: Schema.Types.ObjectId,
+      ref: 'Role',
+      required: false,
     },
+    groups: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Group',
+    }],
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    lastLogin: {
+      type: Date,
+    },
+    passwordChangedAt: {
+      type: Date,
+    },
+    invitations: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Invitation',
+    }],
     department: {
       type: String,
       enum: [

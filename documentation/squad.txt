@@ -1,0 +1,163 @@
+Initiate Payment
+This API allows you to initiate transaction by making calls from your server which returns a URL that when visited will call up our payment modal.
+note
+Authorization Any request made without the authorization key (secret key) will fail with a ** 401 ** (Unauthorized) response code.
+
+caution
+If using other services such as dynamic virtual accounts, do not use the same transaction reference
+
+info
+The authorization key is sent via the request header as Bearer Token Authorization
+
+Example: Authorization: Bearer sandbox_sk_94f2b798466408ef4d19e848ee1a4d1a3e93f104046f
+
+POST sandbox-api.squadco.com/payment/Initiate
+
+
+  curl --location 'https://sandbox-api.squadco.com/payment/Initiate' 
+  --header 'Authorization: 47M3DMZD'
+  --header 'Content-Type: application/json'
+  --data-raw '{
+    "amount":_ ,
+    "email":_ ,
+    "key":_ ,
+      "currency":"NGN",
+      "initiate_type": "inline",
+      "CallBack_URL" : "https://www.linkedin.com/",
+  }
+
+
+This endpoint returns a checkout URL that when visited calls up the modal with the various payment channel.
+
+Parameters
+Header
+Authorization*
+
+String
+
+API keys (Secret Key) that authorize your transactions and gotten from your squad dashboard
+
+Body
+email*
+
+String
+
+Customer's email address.
+
+amount*
+
+String
+
+The amount you are debiting customer (expressed in the lowest currency value - kobo& cent). 10000 = 100NGN for Naira Transactions
+
+initiate_type*
+
+String
+
+This states the method by which the transaction is initiated. At the moment, this can only take the value 'inline'.
+
+currency*
+
+String
+
+The currency you want the amount to be charged in. Allowed value is either NGN or USD.
+
+transaction_ref
+
+String
+
+This states the method by which the transaction is initiated. At the moment, this can only take the value 'inline'.
+
+customer_name
+
+String
+
+Name of Customer carrying out the transaction
+
+callback_url
+
+String
+
+Sample: http://squadco.com
+
+payment_channels
+
+Array
+
+An array of payment channels to control what channels you want to make available for the user to make a payment with. Available channels include; ['card', 'bank' , 'ussd','transfer']
+
+metadata
+
+Object
+
+Object that contains any additional information that you want to record with the transaction. The custom fields in the object will be returned via webhook and the payment verification endpoint.
+
+pass_charge
+
+Boolean
+
+It takes two possible values: True or False. It is set to False by default. When set to True, the charges on the transaction is computed and passed on to the customer(payer). But when set to False, the charge is passed to the merchant and will be deducted from the amount to be settled to the merchant.
+
+sub_merchant_id
+
+String
+
+This is the ID of a meerchant that was created by an aggregator which allows the aggregator initiate a transaction on behalf of the submerchant. This parameter is an optional field that is passed only by a registered aggregator
+
+response:
+{
+    "status": 200,
+    "message": "success",
+    "data": {
+        "auth_url": null,
+        "access_token": null,
+        "merchant_info": {
+            "merchant_response": null,
+            "merchant_name": null,
+            "merchant_logo": null,
+            "merchant_id": "SBN1EBZEQ8"
+        },
+        "currency": "NGN",
+        "recurring": {
+            "frequency": null,
+            "duration": null,
+            "type": 0,
+            "plan_code": null,
+            "customer_name": null
+        },
+        "is_recurring": false,
+        "plan_code": null,
+        "callback_url": "http://squadco.com",
+        "transaction_ref": "4678388588350909090AH",
+        "transaction_memo": null,
+        "transaction_amount": 43000,
+        "authorized_channels": [
+            "card",
+            "ussd",
+            "bank"
+        ],
+        "checkout_url": "https://sandbox-pay.squadco.com/4678388588350909090AH"
+    }
+}
+
+error response: 
+401(Unauthorized)
+{
+            "status": 401,
+            "message": "Initiate transaction Unauthorized",
+            "data": null
+}
+
+400: Bad Request
+{
+        "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+        "title": "One or more validation errors occurred.",
+        "status": 400,
+        "traceId": "|8aec540f-493270cdd9661378.",
+        "errors": {
+            "email": [
+                "The email field is required."
+            ]
+        }
+}
+

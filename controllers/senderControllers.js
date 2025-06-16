@@ -5,11 +5,11 @@ const User = require("../models/users"); // If needed to check user
 // CREATE a new sender
 exports.createSender = async (req, res) => {
   try {
-    const { organization, userId, name, email, smtpHost, smtpPort, username, password, maxDailyLimit } = req.body;
+    const { organizationId, userId, name, email, smtpHost, smtpPort, username, password, maxDailyLimit } = req.body;
     console.log(req.body);
 
     const newSender = new Sender({
-      organization,
+      organization: organizationId,
       userId,
       name,
       email,
@@ -32,8 +32,8 @@ exports.createSender = async (req, res) => {
 exports.getSendersByUser = async (req, res) => {
   const { userId } = req.params;
   try {
-    const senders = await Sender.find({ user: userId })
-      .populate('organization user')
+    const senders = await Sender.find({ userId })
+      .populate('organization userId')
       .exec();
     res.status(200).json({ success: true, senders });
   } catch (error) {
@@ -72,31 +72,21 @@ exports.getSendersByOrganization = async (req, res) => {
       res.status(500).json({ success: false, message: "Failed to retrieve senders" });
     }
   };
-  
-  // GET all senders for a specific user
-  exports.getSendersByUser = async (req, res) => {
-    const { userId } = req.params;
-    try {
-      const senders = await Sender.find({ user: userId })
-        .populate('organization user')
-        .exec();
-      res.status(200).json({ success: true, senders });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ success: false, message: "Failed to retrieve senders" });
-    }
-  };
 
 // UPDATE a sender's details
 exports.updateSender = async (req, res) => {
   const { senderId } = req.params;
-  const { name, email, smtpHost, smtpPort, username, password, maxDailyLimit, isActive } = req.body;
+  const { name, email, smtpHost, smtpPort, username, password, maxDailyLimit, isActive, organizationId, userId } = req.body;
+  console.log(req.body);
 
   try {
+    const updateFields = { name, email, smtpHost, smtpPort, username, password, maxDailyLimit, isActive, updatedAt: Date.now() };
+    if (organizationId) updateFields.organization = organizationId;
+    if (userId) updateFields.userId = userId;
     const updatedSender = await Sender.findByIdAndUpdate(
       senderId,
-      { $set: { name, email, smtpHost, smtpPort, username, password, maxDailyLimit, isActive, updatedAt: Date.now() } },
-      { new: true } // return the updated sender
+      { $set: updateFields },
+      { new: true }
     );
 
     if (!updatedSender) {

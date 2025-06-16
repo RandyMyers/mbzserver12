@@ -1,4 +1,6 @@
 const Email = require("../models/emails"); // Import the Email model
+const EmailLogs = require("../models/emailLogs");
+const logEvent = require('../helper/logEvent');
 
 // CREATE a new email
 exports.createEmail = async (req, res) => {
@@ -16,6 +18,14 @@ exports.createEmail = async (req, res) => {
     });
 
     const savedEmail = await newEmail.save();
+    await logEvent({
+      action: 'create_email',
+      user: req.user._id,
+      resource: 'Email',
+      resourceId: savedEmail._id,
+      details: { to: savedEmail.recipient, subject: savedEmail.subject },
+      organization: req.user.organization
+    });
     res.status(201).json({ success: true, email: savedEmail });
   } catch (error) {
     console.error(error);
@@ -56,9 +66,10 @@ exports.getEmailById = async (req, res) => {
 // GET emails by status
 exports.getEmailsByStatus = async (req, res) => {
     const { status } = req.params;
+    console.log(status);
   
     // Validate status input
-    const validStatuses = ["trash", "draft", "scheduled"];
+    const validStatuses = ["inbox", "sent", "archived", "trash", "drafts","outbox", "scheduled"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ success: false, message: "Invalid status value" });
     }
@@ -92,6 +103,15 @@ exports.updateEmail = async (req, res) => {
       return res.status(404).json({ success: false, message: "Email not found" });
     }
 
+    await logEvent({
+      action: 'update_email',
+      user: req.user._id,
+      resource: 'Email',
+      resourceId: updatedEmail._id,
+      details: { to: updatedEmail.recipient, subject: updatedEmail.subject },
+      organization: req.user.organization
+    });
+
     res.status(200).json({ success: true, email: updatedEmail });
   } catch (error) {
     console.error(error);
@@ -107,10 +127,37 @@ exports.deleteEmail = async (req, res) => {
     if (!deletedEmail) {
       return res.status(404).json({ success: false, message: "Email not found" });
     }
+    await logEvent({
+      action: 'delete_email',
+      user: req.user._id,
+      resource: 'Email',
+      resourceId: deletedEmail._id,
+      details: { to: deletedEmail.recipient, subject: deletedEmail.subject },
+      organization: req.user.organization
+    });
     res.status(200).json({ success: true, message: "Email deleted successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Failed to delete email" });
+  }
+};
+
+// Example: Add a function to log analytics info (to be called from webhook or tracking pixel endpoint)
+exports.logEmailAnalytics = async (req, res) => {
+  try {
+    const { emailId, status, deviceType, client, country } = req.body;
+    const log = new EmailLogs({
+      emailId,
+      status,
+      deviceType,
+      client,
+      country,
+      sentAt: status === 'sent' ? new Date() : undefined,
+    });
+    await log.save();
+    res.status(201).json({ success: true, log });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 

@@ -26,4 +26,16 @@ router.delete("/delete/:orderId", orderController.deleteOrder);
 // SYNC orders for a specific store and organization
 router.post("/sync/:storeId/:organizationId", orderController.syncOrders);
 
+// Analytics Endpoints
+router.get("/analytics/cross-store/:organizationId", orderController.getCrossStorePerformance);
+router.get("/analytics/temporal/:organizationId", orderController.getTemporalAnalytics);
+router.get("/analytics/customers/:organizationId", orderController.getCustomerAnalytics);
+router.get("/analytics/products/:organizationId", orderController.getProductPerformance);
+router.get("/analytics/financial/:organizationId", orderController.getFinancialAnalytics);
+router.get("/analytics/operations/:organizationId", orderController.getOperationalMetrics);
+router.get("/analytics/geospatial/:organizationId", orderController.getGeospatialAnalytics);
+router.get("/analytics/status/:organizationId", orderController.getStatusDistribution);
+router.get("/analytics/funnel/:organizationId", orderController.getSalesFunnel);
+router.get("/analytics/ltv/:organizationId", orderController.getCustomerLTV);
+
 module.exports = router;
