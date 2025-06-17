@@ -9,6 +9,7 @@ router.get('/check-domain', websiteController.checkDomain);
 
 // Website CRUD operations
 router.get('/organization/:organizationId', websiteController.getOrganizationWebsites);
+router.get('/:id', websiteController.getWebsiteById);
 router.delete('/delete/:id', websiteController.deleteWebsite);
 
 // Step-by-step website configuration

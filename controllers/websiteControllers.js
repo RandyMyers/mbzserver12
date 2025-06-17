@@ -182,6 +182,44 @@ exports.getAllWebsites = async (req, res) => {
     }
   };
 
+// Get website by ID
+exports.getWebsiteById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    //const { userId } = req.body;
+
+    // Find the website
+    const website = await Website.findById(id)
+      .populate('template')
+      .populate('organization')
+      .populate('owner');
+
+    if (!website) {
+      return res.status(404).json({
+        success: false,
+        message: 'Website not found'
+      });
+    }
+
+    // Check if user has access to the website
+   // const organization = await verifyOrganizationAccess(website.organization, userId);
+   // if (!organization) {
+  //    return res.status(403).json({
+  //      success: false,
+  //      message: 'Unauthorized: You do not have access to this website'
+  //    });
+ //   }
+
+    res.status(200).json({
+      success: true,
+      data:website
+    });
+
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
   // Get website analytics
 exports.getWebsiteAnalytics = async (req, res) => {
     try {

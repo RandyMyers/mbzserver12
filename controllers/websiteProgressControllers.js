@@ -18,6 +18,7 @@ const handleError = (res, error, status = 400) => {
 exports.getWebsiteProgress = async (req, res) => {
   try {
     const { websiteId } = req.params;
+    console.log(websiteId);
     
     const progress = await WebsiteProgress.findOne({ website: websiteId })
       .populate('completedSteps.completedBy')
