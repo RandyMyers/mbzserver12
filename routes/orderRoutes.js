@@ -17,6 +17,9 @@ router.get("/store/:storeId", orderController.getOrdersByStoreId);
 // GET a specific order by ID
 router.get("/get/:orderId", orderController.getOrderById);
 
+// GET recent orders for dashboard
+router.get("/recent", orderController.getRecentOrders);
+
 // UPDATE a specific order by ID
 router.patch("/update/:orderId", orderController.updateOrder);
 

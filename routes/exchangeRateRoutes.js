@@ -1,20 +1,30 @@
 const express = require('express');
 const router = express.Router();
-const exchangeRateController = require('../controllers/exchangeRateControllers');
+const exchangeRateController = require('../controllers/exchangeRateController');
+const { protect } = require('../middleware/authMiddleware');
 
-// Set or Update Exchange Rate
-router.post('/set', exchangeRateController.setExchangeRate);
+// Apply authentication middleware to all routes
+router.use(protect);
 
-// Get Exchange Rate
-router.get('/:baseCurrency/:targetCurrency', exchangeRateController.getExchangeRate);
+// Get all exchange rates for an organization
+router.get('/', exchangeRateController.getExchangeRates);
 
-// Get All Exchange Rates
-router.get('/all', exchangeRateController.getAllExchangeRates);
+// Convert currency (must come before /:id route)
+router.get('/convert', exchangeRateController.convertCurrency);
 
-// Delete Exchange Rate
-router.delete('/exchange-rate/:baseCurrency/:targetCurrency', exchangeRateController.deleteExchangeRate);
+// Get a specific exchange rate
+router.get('/:id', exchangeRateController.getExchangeRate);
 
-// Patch (partial update) Exchange Rate
-router.patch('/delete/:baseCurrency/:targetCurrency', exchangeRateController.patchExchangeRate);
+// Create a new exchange rate
+router.post('/', exchangeRateController.createExchangeRate);
+
+// Bulk create exchange rates
+router.post('/bulk', exchangeRateController.bulkCreateExchangeRates);
+
+// Update an exchange rate
+router.put('/:id', exchangeRateController.updateExchangeRate);
+
+// Delete an exchange rate
+router.delete('/:id', exchangeRateController.deleteExchangeRate);
 
 module.exports = router;

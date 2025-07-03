@@ -57,6 +57,7 @@ const websiteRoutes = require('./routes/websiteRoutes');
 const templateRoutes = require('./routes/templateRoutes');
 const progressRoutes = require('./routes/websiteProgressRoutes');
 const exchangeRateRoutes = require('./routes/exchangeRateRoutes');
+const userPreferencesRoutes = require('./routes/userPreferencesRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const advancedAnalyticsRoutes = require('./routes/advancedAnalyticsRoutes');
 const callSchedulerRoutes = require('./routes/callSchedulerRoutes');
@@ -64,6 +65,7 @@ const supportRoutes = require('./routes/supportRoutes');
 const paymentGatewayKeyRoutes = require('./routes/paymentGatewayKeyRoutes');
 const chatIntegrationRoutes = require('./routes/chatIntegrationRoutes');
 const campaignRoutes = require('./routes/campaignRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 dotenv.config();
 
@@ -143,6 +145,7 @@ app.use('/api/website/progress', progressRoutes);
 //app.use('/api/payment/method', paymentMethodRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/exchange-rates', exchangeRateRoutes);
+app.use('/api/user-preferences', userPreferencesRoutes);
 app.use('/api/senders', senderRoutes);
 //app.use('/api/senders', senderRoutes);
 //app.use('/api/sms/templates', smsTemplateRoutes);
@@ -158,6 +161,7 @@ app.use('/api/support', supportRoutes);
 app.use('/api/payment-gateways', paymentGatewayKeyRoutes);
 app.use('/api/chat-integrations', chatIntegrationRoutes);
 app.use('/api/campaigns', campaignRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 //Start the cron job for receiver emails
 receiverEvent.scheduleReceiverEmails();

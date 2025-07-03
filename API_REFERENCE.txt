@@ -1,0 +1,804 @@
+# MBZ Tech API Reference Documentation
+# Base URL: https://mbzrevamp.onrender.com/api
+# Local Development: http://localhost:8800/api
+
+## Table of Contents
+1. Authentication
+2. Users
+3. Organizations
+4. Orders
+5. Inventory
+6. Customers
+7. Tasks
+8. Affiliates
+9. Campaigns
+10. Support
+11. Payments
+12. Analytics
+13. Email Management
+14. Website Management
+15. Subscriptions
+16. Miscellaneous
+
+## 1. AUTHENTICATION
+
+### POST /auth/register
+**Description:** Register a new user and create an organization
+**Body:**
+```json
+{
+  "name": "string",
+  "businessName": "string", 
+  "email": "string",
+  "password": "string"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "User registered successfully",
+  "userId": "string",
+  "username": "string",
+  "email": "string",
+  "role": "string",
+  "token": "string",
+  "organizationCode": "string",
+  "organizationId": "string"
+}
+```
+
+### POST /auth/login
+**Description:** Login user with email and password
+**Body:**
+```json
+{
+  "email": "string",
+  "password": "string"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "token": "string",
+  "userId": "string",
+  "username": "string",
+  "email": "string",
+  "role": "string",
+  "organizationId": "string",
+  "organization": "string",
+  "organizationCode": "string",
+  "profilePicture": "string",
+  "status": "string"
+}
+```
+
+### POST /auth/super-admin/register
+**Description:** Register a super admin user
+**Body:**
+```json
+{
+  "username": "string",
+  "name": "string",
+  "email": "string",
+  "password": "string",
+  "role": "super-admin"
+}
+```
+
+### POST /auth/super/admin/login
+**Description:** Login super admin with username and password
+**Body:**
+```json
+{
+  "username": "string",
+  "password": "string"
+}
+```
+
+### POST /auth/change/password
+**Description:** Change password for regular user
+**Body:**
+```json
+{
+  "userId": "string",
+  "organizationId": "string",
+  "currentPassword": "string",
+  "newPassword": "string"
+}
+```
+
+### POST /auth/super-admin/change/password
+**Description:** Change password for super admin
+**Body:**
+```json
+{
+  "userId": "string",
+  "currentPassword": "string",
+  "newPassword": "string"
+}
+```
+
+## 2. USERS
+
+### POST /users/create
+**Description:** Create a new user (Admin only)
+**Body:** User object with required fields
+**Auth:** Required
+
+### GET /users/all
+**Description:** Get all users (Super admin only)
+**Auth:** Required
+
+### GET /users/get/:userId
+**Description:** Get user by ID
+**Auth:** Required
+
+### PATCH /users/update/:userId
+**Description:** Update user details
+**Body:** User update object
+**Auth:** Required
+
+### PATCH /users/change/:userId/status
+**Description:** Update user status (active/inactive)
+**Body:** `{"status": "active" | "inactive"}`
+**Auth:** Required
+
+### GET /users/organization/:organizationId
+**Description:** Get all users in an organization
+**Auth:** Required
+
+### DELETE /users/delete/:userId
+**Description:** Delete a user
+**Auth:** Required
+
+### PATCH /users/:userId/profile-picture
+**Description:** Update user profile picture
+**Body:** Form data with image file
+**Auth:** Required
+
+## 3. ORGANIZATIONS
+
+### POST /organization/create
+**Description:** Create a new organization
+**Body:**
+```json
+{
+  "name": "string",
+  "description": "string",
+  "businessType": "string",
+  "address": {
+    "street": "string",
+    "city": "string",
+    "state": "string",
+    "postalCode": "string",
+    "country": "string"
+  },
+  "phone": "string",
+  "email": "string"
+}
+```
+
+### GET /organization/all
+**Description:** Get all organizations (Super admin only)
+
+### GET /organization/get/:organizationId
+**Description:** Get organization by ID
+
+### PATCH /organization/update/:organizationId
+**Description:** Update organization details
+**Body:** Organization update object
+
+### DELETE /organization/delete/:organizationId
+**Description:** Delete organization
+
+### PATCH /organization/logo/:organizationId
+**Description:** Update organization logo
+**Body:** Form data with logo file
+
+## 4. ORDERS
+
+### POST /orders/create
+**Description:** Create a new order
+**Body:** Order object with required fields
+
+### GET /orders/all
+**Description:** Get all orders
+
+### GET /orders/organization/:organizationId
+**Description:** Get all orders for an organization
+
+### GET /orders/store/:storeId
+**Description:** Get all orders for a specific store
+
+### GET /orders/get/:orderId
+**Description:** Get order by ID
+
+### PATCH /orders/update/:orderId
+**Description:** Update order details
+**Body:** Order update object
+
+### DELETE /orders/delete/:orderId
+**Description:** Delete an order
+
+### POST /orders/sync/:storeId/:organizationId
+**Description:** Sync orders from external store
+**Body:** `{"userId": "string"}`
+
+### Analytics Endpoints:
+- GET /orders/analytics/cross-store/:organizationId
+- GET /orders/analytics/temporal/:organizationId
+- GET /orders/analytics/customers/:organizationId
+- GET /orders/analytics/products/:organizationId
+- GET /orders/analytics/financial/:organizationId
+- GET /orders/analytics/operations/:organizationId
+- GET /orders/analytics/geospatial/:organizationId
+- GET /orders/analytics/status/:organizationId
+- GET /orders/analytics/funnel/:organizationId
+- GET /orders/analytics/ltv/:organizationId
+
+## 5. INVENTORY
+
+### POST /inventory/create
+**Description:** Create a new product
+**Body:** Product object
+
+### GET /inventory/organization/:organizationId
+**Description:** Get all products by organization
+
+### GET /inventory/store/:storeId
+**Description:** Get all products by store
+
+### GET /inventory/all
+**Description:** Get all products
+
+### GET /inventory/get/:productId
+**Description:** Get product by ID
+
+### PATCH /inventory/update/:productId
+**Description:** Update product
+**Body:** Product update object
+
+### DELETE /inventory/delete/:productId
+**Description:** Delete product
+
+### DELETE /inventory/deleteAll/:storeId
+**Description:** Delete all products by store
+
+### POST /inventory/sync/:storeId/:organizationId
+**Description:** Sync products from external store
+
+### Metrics Endpoints:
+- GET /inventory/metrics/total-products/:organizationId
+- GET /inventory/metrics/in-stock/:organizationId
+- GET /inventory/metrics/low-stock/:organizationId
+- GET /inventory/metrics/out-of-stock/:organizationId
+- GET /inventory/metrics/category-count/:organizationId
+- GET /inventory/metrics/store-count/:organizationId
+- GET /inventory/metrics/total-value/:organizationId
+- GET /inventory/metrics/avg-price/:organizationId
+- GET /inventory/metrics/on-sale/:organizationId
+- GET /inventory/metrics/avg-rating/:organizationId
+
+## 6. CUSTOMERS
+
+### POST /customers/create
+**Description:** Create a new customer
+**Body:** Customer object
+
+### GET /customers/all
+**Description:** Get all customers
+
+### GET /customers/get/:id
+**Description:** Get customer by ID
+
+### GET /customers/organization/:organizationId
+**Description:** Get customers by organization
+
+### PATCH /customers/update/:id
+**Description:** Update customer
+**Body:** Customer update object
+
+### DELETE /customers/delete/:id
+**Description:** Delete customer
+
+### GET /customers/store/:storeId
+**Description:** Get customers by store
+
+### POST /customers/sync/:storeId/:organizationId
+**Description:** Sync customers from external store
+
+## 7. TASKS
+
+### POST /tasks/create
+**Description:** Create a new task
+**Body:** Task object
+
+### GET /tasks/organization/:organizationId
+**Description:** Get tasks by organization
+
+### GET /tasks/get/:taskId
+**Description:** Get task by ID
+
+### PATCH /tasks/update/:taskId
+**Description:** Update task
+**Body:** Task update object
+
+### DELETE /tasks/delete/:taskId
+**Description:** Delete task
+
+### PATCH /tasks/status/:taskId
+**Description:** Update task status (for drag and drop)
+**Body:** `{"status": "string"}`
+
+### Subtask Management:
+- POST /tasks/subtasks/create/:taskId
+- PATCH /tasks/:taskId/subtasks/update/:subtaskId
+- DELETE /tasks/:taskId/subtasks/delete/:subtaskId
+
+### POST /tasks/:taskId/comments
+**Description:** Add comment to task
+**Body:** `{"comment": "string"}`
+
+### GET /tasks/user/:userId
+**Description:** Get tasks by user
+
+## 8. AFFILIATES
+
+### GET /affiliates
+**Description:** Get all affiliates (Admin only)
+**Auth:** Required, Admin only
+
+### POST /affiliates
+**Description:** Create affiliate (Admin only)
+**Body:** Affiliate object
+**Auth:** Required, Admin only
+
+### GET /affiliates/:id
+**Description:** Get affiliate by ID
+**Auth:** Required, Admin only
+
+### PATCH /affiliates/:id
+**Description:** Update affiliate
+**Body:** Affiliate update object
+**Auth:** Required, Admin only
+
+### DELETE /affiliates/:id
+**Description:** Delete affiliate
+**Auth:** Required, Admin only
+
+### PATCH /affiliates/:id/status
+**Description:** Update affiliate status
+**Auth:** Required, Admin only
+
+### PATCH /affiliates/:id/commission-rate
+**Description:** Update commission rate
+**Auth:** Required, Admin only
+
+### Affiliate Dashboard (for affiliates themselves):
+- GET /affiliates/dashboard/overview
+- GET /affiliates/dashboard/referrals
+- GET /affiliates/dashboard/commissions
+- GET /affiliates/dashboard/payouts
+- GET /affiliates/dashboard/materials
+
+### Affiliate Profile:
+- GET /affiliates/profile
+- PATCH /affiliates/profile
+
+### Affiliate Settings:
+- GET /affiliates/settings
+- PATCH /affiliates/settings
+
+### Referral Management:
+- GET /affiliates/:affiliateId/referrals
+- POST /affiliates/:affiliateId/referrals
+- GET /affiliates/:affiliateId/referrals/:id
+- PATCH /affiliates/:affiliateId/referrals/:id
+
+### Commission Management:
+- GET /affiliates/:affiliateId/commissions
+- POST /affiliates/:affiliateId/commissions
+- GET /affiliates/:affiliateId/commissions/:id
+- PATCH /affiliates/:affiliateId/commissions/:id
+
+### Payout Management:
+- GET /affiliates/:affiliateId/payouts
+- POST /affiliates/:affiliateId/payouts
+- GET /affiliates/:affiliateId/payouts/:id
+- PATCH /affiliates/:affiliateId/payouts/:id
+
+### Marketing Materials:
+- GET /affiliates/:affiliateId/materials
+- POST /affiliates/:affiliateId/materials
+- GET /affiliates/:affiliateId/materials/:id
+- PATCH /affiliates/:affiliateId/materials/:id
+- DELETE /affiliates/:affiliateId/materials/:id
+
+## 9. CAMPAIGNS
+
+### POST /campaigns/create
+**Description:** Create a new campaign
+**Body:** Campaign object
+
+### GET /campaigns/all
+**Description:** Get all campaigns
+
+### GET /campaigns/get/:campaignId
+**Description:** Get campaign by ID
+
+### PATCH /campaigns/update/:campaignId
+**Description:** Update campaign
+**Body:** Campaign update object
+
+### DELETE /campaigns/delete/:campaignId
+**Description:** Delete campaign
+
+### Specialized Updates:
+- PATCH /campaigns/updateTemplate/:campaignId
+- PATCH /campaigns/updateContacts/:campaignId
+- PATCH /campaigns/updateSenderEmails/:campaignId
+- PATCH /campaigns/updateTargetCategories/:campaignId
+- PATCH /campaigns/updateStatus/:campaignId
+
+### POST /campaigns/start/:campaignId
+**Description:** Start a campaign
+
+### GET /campaigns/track/open/:campaignId/:customerId
+**Description:** Track email open
+
+## 10. SUPPORT
+
+### POST /support
+**Description:** Create support ticket
+**Body:** Support ticket object
+
+### GET /support
+**Description:** Get all tickets
+**Query:** organizationId
+
+### GET /support/:id
+**Description:** Get ticket by ID
+**Query:** organizationId
+
+### PUT /support/:id
+**Description:** Update ticket
+**Body:** Ticket update object
+
+### POST /support/:id/message
+**Description:** Add message to ticket
+**Body:** `{"message": "string"}`
+
+### PATCH /support/:id/status
+**Description:** Change ticket status
+**Body:** `{"status": "string"}`
+
+### DELETE /support/:id
+**Description:** Delete ticket
+
+### Chat Integration:
+- POST /support/chat-integration
+- GET /support/chat-integration
+- PUT /support/chat-integration
+- DELETE /support/chat-integration
+
+## 11. PAYMENTS
+
+### POST /payments/initiate
+**Description:** Initiate a payment
+**Body:** Payment initiation object
+
+### POST /payments/upload-proof
+**Description:** Upload payment proof (bank transfer)
+**Body:** Form data with proof file
+
+### POST /payments/initiate-squad
+**Description:** Initiate Squad payment
+**Body:** Squad payment object
+
+## 12. ANALYTICS
+
+### Basic Analytics:
+- GET /analytics/total-revenue
+- GET /analytics/total-orders
+- GET /analytics/new-customers
+- GET /analytics/average-order-value
+- GET /analytics/return-rate
+- GET /analytics/lifetime-value
+- GET /analytics/customer-acquisition
+- GET /analytics/product-performance
+- GET /analytics/funnel-data
+- GET /analytics/retention-data
+- GET /analytics/regional-sales
+
+### Email Analytics:
+- GET /analytics/email/delivery-stats
+- GET /analytics/email/device-stats
+- GET /analytics/email/geo-stats
+
+### Advanced Analytics:
+- GET /advanced-analytics/sales/total-revenue
+- GET /advanced-analytics/sales/revenue-by-product
+- GET /advanced-analytics/sales/order-status-distribution
+- GET /advanced-analytics/customers/new-vs-returning
+- GET /advanced-analytics/customers/acquisition-sources
+- GET /advanced-analytics/products/best-sellers
+- GET /advanced-analytics/products/low-stock
+- GET /advanced-analytics/funnel/abandoned-cart-rate
+
+## 13. EMAIL MANAGEMENT
+
+### Emails:
+- POST /emails/create
+- GET /emails/all
+- GET /emails/get/:emailId
+- PATCH /emails/update/:emailId
+- DELETE /emails/delete/:emailId
+- GET /emails/status/:status
+- POST /emails/analytics/log
+
+### Email Templates:
+- POST /email/templates/create
+- GET /email/templates/all
+- GET /email/templates/get/:emailTemplateId
+- PATCH /email/templates/update/:emailTemplateId
+- DELETE /email/templates/delete/:emailTemplateId
+- GET /email/templates/organization/:organizationId
+
+### Senders:
+- POST /senders/create
+- GET /senders/user/:userId
+- GET /senders/organization/:organizationId
+- GET /senders/:senderId
+- PATCH /senders/update/:senderId
+- DELETE /senders/:senderId
+- PATCH /senders/reset-limit/:senderId
+
+### Receivers:
+- POST /receivers/create
+- GET /receivers/user/:userId
+- GET /receivers/:receiverId
+- PATCH /receivers/update/:receiverId
+- DELETE /receivers/delete/:receiverId
+- PATCH /receivers/:receiverId/deactivate
+
+### Inbox:
+- POST /inbox/create
+- GET /inbox/all
+- GET /inbox/get/:inboxEmailId
+- PATCH /inbox/update/:inboxEmailId
+- DELETE /inbox/delete/:inboxEmailId
+- GET /inbox/organization/:organizationId
+
+## 14. WEBSITE MANAGEMENT
+
+### Websites:
+- POST /websites/create
+- GET /websites/check-domain
+- GET /websites/organization/:organizationId
+- GET /websites/:id
+- DELETE /websites/delete/:id
+- PATCH /websites/basic-info/:id
+- PATCH /websites/business-info/:id
+- PATCH /websites/colors/:id
+- PATCH /websites/emails/:id
+- GET /websites/all/:userId
+- GET /websites/analytics/:userId
+- GET /websites/analytics/organization/:organizationId
+
+### Website Progress:
+- GET /website/progress/:websiteId
+- PATCH /website/progress/:websiteId/step
+- POST /website/progress/:websiteId/notes
+- PATCH /website/progress/:websiteId/notes/:noteId
+- POST /website/progress/:websiteId/assets
+- POST /website/progress/:websiteId/designers
+- POST /website/progress/:websiteId/milestones
+- PATCH /website/progress/:websiteId/milestones/:milestoneId
+- POST /website/progress/:websiteId/approvals
+- POST /website/progress/:websiteId/versions
+- POST /website/progress/:websiteId/feedback
+- PATCH /website/progress/:websiteId/feedback/:feedbackId
+- POST /website/progress/:websiteId/qa-checks
+
+### Templates:
+- POST /website/templates/create
+- GET /website/templates/all
+- GET /website/templates/get/:id
+- PATCH /website/templates/update/:id
+- DELETE /website/templates/delete/:id
+- GET /website/templates/user/:userId
+- GET /website/templates/analytics/all
+
+## 15. SUBSCRIPTIONS
+
+### Subscriptions:
+- POST /subscriptions
+- GET /subscriptions
+- GET /subscriptions/:id
+- PUT /subscriptions/:id
+- DELETE /subscriptions/:id
+- POST /subscriptions/assign
+- POST /subscriptions/:id/renew
+- POST /subscriptions/:id/cancel
+
+### Subscription Plans:
+- POST /plans
+- GET /plans
+- GET /plans/:id
+- PUT /plans/:id
+- DELETE /plans/:id
+
+## 16. MISCELLANEOUS
+
+### Stores:
+- POST /stores/create
+- GET /stores/organization/:organizationId
+- GET /stores/get/:storeId
+- PATCH /stores/update/:storeId
+- DELETE /stores/delete/:storeId
+- PATCH /stores/sync/:storeId
+
+### Products:
+- POST /products/create
+- GET /products/all
+- GET /products/get/:id
+- PATCH /products/update/:id
+- DELETE /products/delete/:id
+- POST /products/add-subscription
+
+### Call Scheduler:
+- POST /calls
+- GET /calls
+- GET /calls/:id
+- PUT /calls/:id
+- PATCH /calls/:id/cancel
+- DELETE /calls/:id
+
+### Exchange Rates:
+- POST /exchange-rates/set
+- GET /exchange-rates/:baseCurrency/:targetCurrency
+- GET /exchange-rates/all
+- DELETE /exchange-rates/exchange-rate/:baseCurrency/:targetCurrency
+- PATCH /exchange-rates/delete/:baseCurrency/:targetCurrency
+
+### Payment Gateway Keys:
+- GET /payment-gateways
+- GET /payment-gateways/:type
+- POST /payment-gateways
+- PUT /payment-gateways/:type
+- DELETE /payment-gateways/:type
+- GET /payment-gateways/:type/public-key
+
+### Chat Integrations:
+- POST /chat-integrations/create
+- GET /chat-integrations/all
+- GET /chat-integrations/get/:id
+- PUT /chat-integrations/update/:id
+- DELETE /chat-integrations/delete/:id
+
+### Draft/Trash/Archived:
+- Various CRUD operations for draft, trash, and archived items
+
+## AUTHENTICATION & AUTHORIZATION
+
+### JWT Token Format:
+```
+Authorization: Bearer <token>
+```
+
+### Token Expiration:
+- Default: 1 hour
+- Refresh mechanism: Re-login required
+
+### Role-Based Access:
+- **super-admin**: Full system access
+- **admin**: Organization-level access
+- **user**: Limited access within organization
+- **affiliate**: Affiliate-specific access
+
+### Organization Isolation:
+- Most endpoints require organizationId
+- Users can only access data within their organization
+- Super admins can access all organizations
+
+## ERROR RESPONSES
+
+### Standard Error Format:
+```json
+{
+  "success": false,
+  "message": "Error description"
+}
+```
+
+### Common HTTP Status Codes:
+- 200: Success
+- 201: Created
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 500: Internal Server Error
+
+## FILE UPLOADS
+
+### Supported Formats:
+- Images: JPG, PNG, GIF
+- Documents: PDF, DOC, DOCX
+- Maximum file size: 10MB
+
+### Upload Endpoints:
+- Profile pictures: `/users/:userId/profile-picture`
+- Organization logos: `/organization/logo/:organizationId`
+- Payment proofs: `/payments/upload-proof`
+- Website assets: `/website/progress/:websiteId/assets`
+
+## RATE LIMITING
+
+### Current Limits:
+- No explicit rate limiting implemented
+- File uploads: 10MB max per file
+- Request body: 10MB max
+
+## WEBHOOKS & INTEGRATIONS
+
+### External Integrations:
+- WooCommerce store sync
+- Payment gateways (Squad, Flutterwave)
+- Email services
+- Chat integrations
+
+### Sync Endpoints:
+- `/orders/sync/:storeId/:organizationId`
+- `/inventory/sync/:storeId/:organizationId`
+- `/customers/sync/:storeId/:organizationId`
+- `/stores/sync/:storeId`
+
+## DEVELOPMENT NOTES
+
+### Environment Variables Required:
+- MONGO_URL: MongoDB connection string
+- JWT_SECRET: JWT signing secret
+- CLOUDINARY_*: Cloudinary configuration
+- Payment gateway API keys
+
+### Database Collections:
+- users
+- organizations
+- orders
+- inventory
+- customers
+- tasks
+- affiliates
+- campaigns
+- support
+- payments
+- emails
+- websites
+- subscriptions
+- And many more...
+
+### Frontend Integration Tips:
+1. Always include JWT token in Authorization header
+2. Handle organizationId in requests where required
+3. Implement proper error handling for all API calls
+4. Use appropriate HTTP methods (GET, POST, PATCH, DELETE)
+5. Handle file uploads with proper content-type headers
+6. Implement retry logic for failed requests
+7. Cache frequently accessed data
+8. Use pagination for large datasets
+
+## SUPPORT & CONTACT
+
+For API support and questions:
+- Check error responses for specific error messages
+- Verify authentication and authorization
+- Ensure proper request format and required fields
+- Contact development team for additional support
+
+---
+*Last Updated: [Current Date]*
+*Version: 1.0* 

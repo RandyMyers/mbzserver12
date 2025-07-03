@@ -19,4 +19,10 @@ router.get('/chat-integration', supportControllers.getChatIntegrations);
 router.put('/chat-integration', supportControllers.updateChatIntegration);
 router.delete('/chat-integration', supportControllers.deleteChatIntegration);
 
+// Stats routes for page overview
+router.get('/metrics/total-tickets/:organizationId', supportControllers.getTotalTickets);
+router.get('/metrics/open-tickets/:organizationId', supportControllers.getOpenTickets);
+router.get('/metrics/resolved-tickets/:organizationId', supportControllers.getResolvedTickets);
+router.get('/metrics/avg-response-time/:organizationId', supportControllers.getAvgResponseTime);
+
 module.exports = router; 

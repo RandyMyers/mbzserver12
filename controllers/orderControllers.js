@@ -660,3 +660,52 @@ exports.refundOrder = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to refund order" });
   }
 };
+
+// GET recent orders for dashboard
+exports.getRecentOrders = async (req, res) => {
+  try {
+    const { organizationId, limit = 5 } = req.query;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Organization ID is required" 
+      });
+    }
+
+    const orders = await Order.find({ 
+      organizationId: new mongoose.Types.ObjectId(organizationId) 
+    })
+    .populate("customer_id", "first_name last_name email")
+    .populate("line_items.inventoryId", "name images")
+    .sort({ date_created: -1 })
+    .limit(parseInt(limit))
+    .exec();
+
+    // Format orders for dashboard display
+    const formattedOrders = orders.map(order => ({
+      id: order.order_id || order._id,
+      customer: order.customer_id ? 
+        `${order.customer_id.first_name || ''} ${order.customer_id.last_name || ''}`.trim() || 
+        order.customer_id.email : 
+        'Unknown Customer',
+      product: order.line_items && order.line_items.length > 0 ? 
+        order.line_items[0].inventoryId?.name || 'Unknown Product' : 
+        'No Products',
+      status: order.status,
+      amount: order.total ? `$${parseFloat(order.total).toFixed(2)}` : '$0.00',
+      date: order.date_created ? new Date(order.date_created).toISOString().split('T')[0] : 'Unknown Date'
+    }));
+
+    res.json({
+      success: true,
+      data: formattedOrders
+    });
+  } catch (error) {
+    console.error('Get Recent Orders Error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch recent orders"
+    });
+  }
+};

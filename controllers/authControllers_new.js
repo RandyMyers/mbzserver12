@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const User = require("../models/users");
 const Organization = require("../models/organization");
-const Role = require("../models/role");
 
 // SMTP Configuration for system emails
 const smtpConfig = {
@@ -92,7 +91,6 @@ exports.registerSuperAdmin = async (req, res) => {
       console.error('Failed to send welcome email:', emailError);
       // Don't fail registration if email fails
     }
-    
 
     res.status(201).json({ 
       success: true, 
@@ -568,128 +566,14 @@ exports.changePasswordSuperAdmin = async (req, res) => {
 // LEGACY SUPPORT (for backward compatibility)
 // ========================================
 
-// Simple register user function for testing
+// Legacy register user function (redirects to organization user registration)
 exports.registerUser = async (req, res) => {
-  console.log('Register user called with data:', req.body);
-  
-  try {
-    const { firstName, lastName, email, password, companyName, referralCode } = req.body;
-    
-    // Basic validation
-    if (!firstName || !lastName || !email || !password || !companyName) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'All required fields must be provided' 
-      });
-    }
-    
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'User with this email already exists' 
-      });
-    }
-
-    // Check if organization already exists
-    const existingOrganization = await Organization.findOne({ name: companyName });
-    if (existingOrganization) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Organization with this name already exists' 
-      });
-    }
-
-    // Create a new organization with a unique organization code
-    const organizationCode = `${companyName.toLowerCase().replace(/\s+/g, '')}${Math.floor(1000000 + Math.random() * 9000000)}`;
-    
-    const newOrganization = new Organization({
-      name: companyName,
-      organizationCode,
-      businessType: 'Other' // Default business type
-    });
-
-    // Save the organization
-    await newOrganization.save();
-
-    // Find or create the admin role
-    let adminRole = await Role.findOne({ name: 'admin' });
-    if (!adminRole) {
-      adminRole = new Role({
-        name: 'admin',
-        description: 'Organization administrator',
-        permissions: {}
-      });
-      await adminRole.save();
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user with proper role and organization references
-    const newUser = new User({
-      fullName: `${firstName} ${lastName}`,
-      email,
-      password: hashedPassword,
-      role: adminRole._id, // Use the ObjectId of the role
-      organization: newOrganization._id, // Use the ObjectId of the organization
-      organizationCode: newOrganization.organizationCode,
-      status: 'active'
-    });
-
-    // Save the user
-    await newUser.save();
-
-    // Send welcome email
-    try {
-      await sendSystemEmail(
-        email,
-        'Welcome to MBZ Technology Platform - Account Created',
-        `
-          <h2>Welcome to MBZ Technology Platform!</h2>
-          <p>Hello ${firstName} ${lastName},</p>
-          <p>Your account has been successfully created for ${companyName}.</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Organization Code:</strong> ${newOrganization.organizationCode}</p>
-          <p>You can now log in to your dashboard and start managing your business.</p>
-          <p>Best regards,<br>MBZ Technology Team</p>
-        `
-      );
-    } catch (emailError) {
-      console.error('Failed to send welcome email:', emailError);
-      // Don't fail registration if email fails
-    }
-
-    const token = jwt.sign(
-      { userId: newUser._id, role: adminRole.name }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '1h' }
-    );
-
-    console.log('User registered successfully:', newUser._id);
-
-    res.status(201).json({ 
-      success: true, 
-      message: 'User registered successfully',
-      userId: newUser._id,
-      username: newUser.fullName,
-      email: newUser.email,
-      role: adminRole.name,
-      organization: newOrganization.name,
-      organizationId: newOrganization._id,
-      organizationCode: newOrganization.organizationCode,
-      token
-    });
-  } catch (error) {
-    console.error('User registration error:', error);
-    res.status(500).json({ success: false, message: 'Server error: ' + error.message });
-  }
+  console.log('Legacy registerUser called, redirecting to organization registration');
+  return exports.registerOrganizationUser(req, res);
 };
 
 // Legacy login user function (redirects to organization user login)
 exports.loginUser = async (req, res) => {
   console.log('Legacy loginUser called, redirecting to organization login');
   return exports.loginOrganizationUser(req, res);
-};
-
+}; 

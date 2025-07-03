@@ -1,6 +1,7 @@
 const Order = require('../models/order');
 const Customer = require('../models/customers');
 const Product = require('../models/inventory');
+const currencyUtils = require('../utils/currencyUtils');
 const mongoose = require('mongoose');
 
 // Helper function to calculate date range
@@ -18,7 +19,7 @@ const getDateRange = (timeRange) => {
 
 exports.totalRevenue = async (req, res) => {
     try {
-    const { timeRange, organizationId } = req.query;
+    const { timeRange, organizationId, userId, displayCurrency } = req.query;
     
     if (!organizationId) {
       return res.status(400).json({ 
@@ -28,49 +29,27 @@ exports.totalRevenue = async (req, res) => {
     }
 
     const startDate = getDateRange(timeRange);
+    const targetCurrency = displayCurrency || await currencyUtils.getDisplayCurrency(userId, organizationId);
 
-    const pipeline = [
-      {
-        $match: {
-          organizationId: new mongoose.Types.ObjectId(organizationId),
-          date_created: { $gte: startDate },
-          status: { $nin: ['cancelled', 'refunded'] },
-          total: { $exists: true, $ne: "" } // Ensure total exists and isn't empty
-        }
-      },
-      {
-        $addFields: {
-          numericTotal: {
-            $cond: [
-              { $eq: [{ $type: "$total" }, "string"] },
-              { $toDouble: "$total" },
-              "$total" // If already a number
-            ]
-          }
-        }
-      },
-      {
-        $match: {
-          numericTotal: { $gt: 0 } // Only include positive values
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          totalRevenue: { $sum: "$numericTotal" },
-          currency: { $first: "$currency" } // Capture currency for reference
-        }
-      }
-    ];
-
-    const result = await Order.aggregate(pipeline);
-    const totalRevenue = result[0]?.totalRevenue || 0;
+    // Multi-currency revenue aggregation with time filter
+    const revenuePipeline = currencyUtils.createMultiCurrencyRevenuePipeline(
+      organizationId, 
+      targetCurrency, 
+      { date_created: { $gte: startDate } }
+    );
+    const revenueResults = await Order.aggregate(revenuePipeline);
+    const revenueSummary = await currencyUtils.processMultiCurrencyResults(revenueResults, targetCurrency, organizationId);
 
     res.json({
       success: true,
       data: { 
-        totalRevenue,
-        currency: result[0]?.currency || 'NGN' // Default to NGN if not specified
+        totalRevenue: revenueSummary.totalConverted,
+        currency: revenueSummary.targetCurrency,
+        currencyBreakdown: revenueSummary.currencyBreakdown,
+        timeRange: {
+          start: startDate,
+          end: new Date()
+        }
       }
     });
     } catch (error) {
@@ -154,38 +133,36 @@ exports.newCustomers = async (req, res) => {
 // Average Order Value
 exports.averageOrderValue = async (req, res) => {
     try {
-    const { timeRange, organizationId } = req.query;
+    const { timeRange, organizationId, userId, displayCurrency } = req.query;
     
     const startDate = getDateRange(timeRange);
+    const targetCurrency = displayCurrency || await currencyUtils.getDisplayCurrency(userId, organizationId);
 
-    const pipeline = [
-      {
-        $match: {
-          organizationId: new mongoose.Types.ObjectId(organizationId),
-          date_created: { $gte: startDate },
-          status: { $nin: ['cancelled', 'refunded'] }
-        }
-      },
-      {
-        $addFields: {
-          numericTotal: { $toDouble: "$total" }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          averageOrderValue: { $avg: "$numericTotal" }
-        }
-      }
-    ];
+    // Multi-currency average order value calculation
+    const revenuePipeline = currencyUtils.createMultiCurrencyRevenuePipeline(
+      organizationId, 
+      targetCurrency, 
+      { date_created: { $gte: startDate } }
+    );
+    const revenueResults = await Order.aggregate(revenuePipeline);
+    const revenueSummary = await currencyUtils.processMultiCurrencyResults(revenueResults, targetCurrency, organizationId);
 
-    const result = await Order.aggregate(pipeline);
+    // Get total order count for the period
+    const totalOrders = await Order.countDocuments({
+      organizationId: new mongoose.Types.ObjectId(organizationId),
+      date_created: { $gte: startDate },
+      status: { $nin: ['cancelled', 'refunded'] }
+    });
     
-    const averageOrderValue = result[0]?.averageOrderValue || 0;
+    const averageOrderValue = totalOrders > 0 ? revenueSummary.totalConverted / totalOrders : 0;
 
     res.json({
       success: true,
-      data: { averageOrderValue }
+      data: { 
+        averageOrderValue,
+        currency: revenueSummary.targetCurrency,
+        totalOrders
+      }
     });
     } catch (error) {
     console.error('Average Order Value Error:', error);
@@ -231,7 +208,8 @@ exports.returnRate = async (req, res) => {
 // Lifetime Value
 exports.lifetimeValue = async (req, res) => {
   try {
-    const { organizationId } = req.query;
+    const { organizationId, userId, displayCurrency } = req.query;
+    const targetCurrency = displayCurrency || await currencyUtils.getDisplayCurrency(userId, organizationId);
 
     const pipeline = [
       {
@@ -242,29 +220,64 @@ exports.lifetimeValue = async (req, res) => {
       },
       {
         $addFields: {
-          numericTotal: { $toDouble: "$total" }
+          numericTotal: {
+            $cond: [
+              { $eq: [{ $type: "$total" }, "string"] },
+              { $toDouble: "$total" },
+              "$total"
+            ]
+          },
+          orderCurrency: {
+            $ifNull: ["$currency", "USD"]
+          }
         }
       },
       {
         $group: {
-          _id: '$customerId',
+          _id: {
+            customerId: '$customerId',
+            currency: '$orderCurrency'
+          },
           totalSpent: { $sum: "$numericTotal" }
         }
       },
       {
         $group: {
-          _id: null,
-          averageLTV: { $avg: '$totalSpent' }
+          _id: "$_id.customerId",
+          spendingByCurrency: {
+            $push: {
+              currency: "$_id.currency",
+              amount: "$totalSpent"
+            }
+          }
         }
       }
     ];
 
     const result = await Order.aggregate(pipeline);
-    const lifetimeValue = result[0]?.averageLTV || 0;
+    
+    // Convert each customer's spending to target currency
+    let totalConvertedLTV = 0;
+    const customerCount = result.length;
+
+    for (const customer of result) {
+      const convertedTotal = await currencyUtils.convertMultipleCurrencies(
+        customer.spendingByCurrency,
+        targetCurrency,
+        organizationId
+      );
+      totalConvertedLTV += convertedTotal;
+    }
+
+    const averageLTV = customerCount > 0 ? totalConvertedLTV / customerCount : 0;
 
     res.json({
       success: true,
-      data: { lifetimeValue }
+      data: { 
+        lifetimeValue: averageLTV,
+        currency: targetCurrency,
+        customerCount
+      }
     });
   } catch (error) {
     console.error('Lifetime Value Error:', error);
@@ -331,8 +344,9 @@ exports.customerAcquisition = async (req, res) => {
 // Product Performance
 exports.productPerformance = async (req, res) => {
   try {
-    const { timeRange, organizationId } = req.query;
+    const { timeRange, organizationId, userId, displayCurrency } = req.query;
     const startDate = getDateRange(timeRange);
+    const targetCurrency = displayCurrency || await currencyUtils.getDisplayCurrency(userId, organizationId);
 
     const pipeline = [
       {
@@ -349,7 +363,8 @@ exports.productPerformance = async (req, res) => {
         $group: {
           _id: "$line_items.inventoryId",
           sales: { $sum: { $multiply: [{ $toDouble: "$line_items.subtotal" }, "$line_items.quantity"] } },
-          quantity: { $sum: "$line_items.quantity" }
+          quantity: { $sum: "$line_items.quantity" },
+          currency: { $first: "$currency" }
         }
       },
       {
@@ -368,6 +383,7 @@ exports.productPerformance = async (req, res) => {
           name: "$product.name",
           sales: 1,
           quantity: 1,
+          currency: 1,
           profit: { 
             $multiply: [
               "$quantity",
@@ -383,9 +399,32 @@ exports.productPerformance = async (req, res) => {
 
     const products = await Order.aggregate(pipeline);
 
+    // Convert sales amounts to target currency
+    const convertedProducts = await Promise.all(
+      products.map(async (product) => {
+        const convertedSales = await currencyUtils.convertCurrency(
+          product.sales,
+          product.currency || 'USD',
+          targetCurrency,
+          organizationId
+        );
+        
+        return {
+          ...product,
+          sales: convertedSales,
+          originalSales: product.sales,
+          originalCurrency: product.currency,
+          convertedCurrency: targetCurrency
+        };
+      })
+    );
+
     res.json({
       success: true,
-      data: { products }
+      data: { 
+        products: convertedProducts,
+        currency: targetCurrency
+      }
     });
   } catch (error) {
     console.error('Product Performance Error:', error);
@@ -541,9 +580,10 @@ exports.retentionData = async (req, res) => {
 // Regional Sales
 exports.regionalSales = async (req, res) => {
   try {
-    const { timeRange, organizationId } = req.query;
+    const { timeRange, organizationId, userId, displayCurrency } = req.query;
     
     const startDate = getDateRange(timeRange);
+    const targetCurrency = displayCurrency || await currencyUtils.getDisplayCurrency(userId, organizationId);
 
     const pipeline = [
       {
@@ -562,14 +602,16 @@ exports.regionalSales = async (req, res) => {
         $group: {
           _id: "$shipping.country",
           sales: { $sum: "$numericTotal" },
-          customers: { $addToSet: "$customerId" }
+          customers: { $addToSet: "$customerId" },
+          currency: { $first: "$currency" }
         }
       },
       {
         $project: {
           region: { $ifNull: ["$_id", "Unknown"] },
           sales: 1,
-          customers: { $size: "$customers" }
+          customers: { $size: "$customers" },
+          currency: 1
         }
       },
       {
@@ -579,9 +621,32 @@ exports.regionalSales = async (req, res) => {
 
     const regionalData = await Order.aggregate(pipeline);
 
+    // Convert sales amounts to target currency
+    const convertedRegionalData = await Promise.all(
+      regionalData.map(async (region) => {
+        const convertedSales = await currencyUtils.convertCurrency(
+          region.sales,
+          region.currency || 'USD',
+          targetCurrency,
+          organizationId
+        );
+        
+        return {
+          ...region,
+          sales: convertedSales,
+          originalSales: region.sales,
+          originalCurrency: region.currency,
+          convertedCurrency: targetCurrency
+        };
+      })
+    );
+
     res.json({
       success: true,
-      data: { regionalData }
+      data: { 
+        regionalData: convertedRegionalData,
+        currency: targetCurrency
+      }
     });
   } catch (error) {
     console.error('Regional Sales Error:', error);

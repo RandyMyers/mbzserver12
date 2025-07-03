@@ -74,6 +74,19 @@ const UserSchema = new Schema({
     organizationCode: {
         type: String,
       },
+    displayCurrency: {
+      type: String,
+      default: 'USD',
+      uppercase: true,
+      trim: true,
+      validate: {
+        validator: function(v) {
+          // Basic currency code validation (3 uppercase letters)
+          return /^[A-Z]{3}$/.test(v);
+        },
+        message: 'Currency code must be 3 uppercase letters (e.g., USD, EUR, NGN)'
+      }
+    },
     profilePicture: {
       type: String,
       default: null,
@@ -93,5 +106,17 @@ UserSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 });
+
+// Method to check if password was changed after a given timestamp
+UserSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false;
+};
 
 module.exports = mongoose.model('User', UserSchema);

@@ -1,5 +1,6 @@
 const SupportTicket = require('../models/support');
 const logEvent = require('../helper/logEvent');
+const mongoose = require('mongoose');
 
 // Create a new support ticket
 exports.createTicket = async (req, res) => {
@@ -232,5 +233,155 @@ exports.deleteChatIntegration = async (req, res) => {
     res.json({ success: true, data: ticket.chatIntegrations });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
+  }
+};
+
+// Support Stats Functions for Page Overview
+exports.getTotalTickets = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Organization ID is required" 
+      });
+    }
+
+    const totalTickets = await SupportTicket.countDocuments({ 
+      organizationId: new mongoose.Types.ObjectId(organizationId) 
+    });
+
+    res.json({
+      success: true,
+      data: { count: totalTickets }
+    });
+  } catch (error) {
+    console.error('Total Tickets Error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to count tickets"
+    });
+  }
+};
+
+exports.getOpenTickets = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Organization ID is required" 
+      });
+    }
+
+    const openTickets = await SupportTicket.countDocuments({ 
+      organizationId: new mongoose.Types.ObjectId(organizationId),
+      status: { $in: ['open', 'in-progress'] }
+    });
+
+    res.json({
+      success: true,
+      data: { count: openTickets }
+    });
+  } catch (error) {
+    console.error('Open Tickets Error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to count open tickets"
+    });
+  }
+};
+
+exports.getResolvedTickets = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Organization ID is required" 
+      });
+    }
+
+    const resolvedTickets = await SupportTicket.countDocuments({ 
+      organizationId: new mongoose.Types.ObjectId(organizationId),
+      status: { $in: ['resolved', 'closed'] }
+    });
+
+    res.json({
+      success: true,
+      data: { count: resolvedTickets }
+    });
+  } catch (error) {
+    console.error('Resolved Tickets Error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to count resolved tickets"
+    });
+  }
+};
+
+exports.getAvgResponseTime = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Organization ID is required" 
+      });
+    }
+
+    const pipeline = [
+      {
+        $match: {
+          organizationId: new mongoose.Types.ObjectId(organizationId),
+          'messages.sender': 'support'
+        }
+      },
+      {
+        $unwind: '$messages'
+      },
+      {
+        $match: {
+          'messages.sender': 'support'
+        }
+      },
+      {
+        $group: {
+          _id: '$_id',
+          firstResponseTime: {
+            $min: {
+              $subtract: ['$messages.timestamp', '$createdAt']
+            }
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          avgResponseTime: { $avg: '$firstResponseTime' }
+        }
+      }
+    ];
+
+    const result = await SupportTicket.aggregate(pipeline);
+    const avgResponseTimeMs = result[0]?.avgResponseTime || 0;
+    const avgResponseTimeHours = avgResponseTimeMs / (1000 * 60 * 60);
+
+    res.json({
+      success: true,
+      data: { 
+        avgResponseTimeHours: Math.round(avgResponseTimeHours * 100) / 100
+      }
+    });
+  } catch (error) {
+    console.error('Average Response Time Error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to calculate average response time"
+    });
   }
 }; 

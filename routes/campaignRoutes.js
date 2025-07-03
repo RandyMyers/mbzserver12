@@ -19,6 +19,13 @@ router.patch('/updateStatus/:campaignId', campaignController.updateStatus);
 // Start campaign
 router.post('/start/:campaignId', campaignController.startCampaign);
 
+// Stats routes for page overview
+router.get('/metrics/total-campaigns/:organizationId', campaignController.getTotalCampaigns);
+router.get('/metrics/active-campaigns/:organizationId', campaignController.getActiveCampaigns);
+router.get('/metrics/emails-sent/:organizationId', campaignController.getEmailsSent);
+router.get('/metrics/open-rate/:organizationId', campaignController.getOpenRate);
+router.get('/metrics/click-rate/:organizationId', campaignController.getClickRate);
+
 // Stats route for overview
 //router.get('/stats/overview', campaignController.getCampaignStats);
 

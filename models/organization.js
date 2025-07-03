@@ -53,6 +53,30 @@ const OrganizationSchema = new Schema({
     ], // Add business categories here
     default: 'Other',
   },
+  defaultCurrency: {
+    type: String,
+    default: 'USD',
+    uppercase: true,
+    trim: true,
+    validate: {
+      validator: function(v) {
+        return /^[A-Z]{3}$/.test(v);
+      },
+      message: 'Currency code must be 3 uppercase letters (e.g., USD, EUR, NGN)'
+    }
+  },
+  analyticsCurrency: {
+    type: String,
+    default: 'USD',
+    uppercase: true,
+    trim: true,
+    validate: {
+      validator: function(v) {
+        return /^[A-Z]{3}$/.test(v);
+      },
+      message: 'Currency code must be 3 uppercase letters (e.g., USD, EUR, NGN)'
+    }
+  },
   subscriptions: [{ type: Schema.Types.ObjectId, ref: 'Subscription' }], // Link subscriptions
   createdAt: {
     type: Date,

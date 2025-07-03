@@ -463,3 +463,208 @@ exports.updateStatus = async (req, res) => {
   };
   
   
+
+// Marketing Stats Functions for Page Overview
+exports.getTotalCampaigns = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Organization ID is required" 
+      });
+    }
+
+    const totalCampaigns = await Campaign.countDocuments({ 
+      organization: new mongoose.Types.ObjectId(organizationId) 
+    });
+
+    res.json({
+      success: true,
+      data: { count: totalCampaigns }
+    });
+  } catch (error) {
+    console.error('Total Campaigns Error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to count campaigns"
+    });
+  }
+};
+
+exports.getActiveCampaigns = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Organization ID is required" 
+      });
+    }
+
+    const activeCampaigns = await Campaign.countDocuments({ 
+      organization: new mongoose.Types.ObjectId(organizationId),
+      status: { $in: ['running', 'scheduled'] }
+    });
+
+    res.json({
+      success: true,
+      data: { count: activeCampaigns }
+    });
+  } catch (error) {
+    console.error('Active Campaigns Error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to count active campaigns"
+    });
+  }
+};
+
+exports.getEmailsSent = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Organization ID is required" 
+      });
+    }
+
+    const pipeline = [
+      {
+        $match: {
+          organization: new mongoose.Types.ObjectId(organizationId)
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalSent: { $sum: "$sentCount" },
+          totalDelivered: { $sum: "$deliveredCount" }
+        }
+      }
+    ];
+
+    const result = await Campaign.aggregate(pipeline);
+    const emailsSent = result[0]?.totalSent || 0;
+    const emailsDelivered = result[0]?.totalDelivered || 0;
+
+    res.json({
+      success: true,
+      data: { 
+        sent: emailsSent,
+        delivered: emailsDelivered
+      }
+    });
+  } catch (error) {
+    console.error('Emails Sent Error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to calculate emails sent"
+    });
+  }
+};
+
+exports.getOpenRate = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Organization ID is required" 
+      });
+    }
+
+    const pipeline = [
+      {
+        $match: {
+          organization: new mongoose.Types.ObjectId(organizationId)
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalDelivered: { $sum: "$deliveredCount" },
+          totalOpened: { $sum: { $size: "$contactsOpened" } }
+        }
+      }
+    ];
+
+    const result = await Campaign.aggregate(pipeline);
+    const totalDelivered = result[0]?.totalDelivered || 0;
+    const totalOpened = result[0]?.totalOpened || 0;
+    
+    const openRate = totalDelivered > 0 ? (totalOpened / totalDelivered) * 100 : 0;
+
+    res.json({
+      success: true,
+      data: { 
+        openRate: Math.round(openRate * 100) / 100,
+        totalOpened,
+        totalDelivered
+      }
+    });
+  } catch (error) {
+    console.error('Open Rate Error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to calculate open rate"
+    });
+  }
+};
+
+exports.getClickRate = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Organization ID is required" 
+      });
+    }
+
+    const pipeline = [
+      {
+        $match: {
+          organization: new mongoose.Types.ObjectId(organizationId)
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalDelivered: { $sum: "$deliveredCount" },
+          totalClicked: { $sum: { $size: "$contactsClicked" } }
+        }
+      }
+    ];
+
+    const result = await Campaign.aggregate(pipeline);
+    const totalDelivered = result[0]?.totalDelivered || 0;
+    const totalClicked = result[0]?.totalClicked || 0;
+    
+    const clickRate = totalDelivered > 0 ? (totalClicked / totalDelivered) * 100 : 0;
+
+    res.json({
+      success: true,
+      data: { 
+        clickRate: Math.round(clickRate * 100) / 100,
+        totalClicked,
+        totalDelivered
+      }
+    });
+  } catch (error) {
+    console.error('Click Rate Error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to calculate click rate"
+    });
+  }
+};
+
+  
+  
