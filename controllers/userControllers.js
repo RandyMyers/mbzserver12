@@ -8,6 +8,9 @@ const Invitation = require('../models/invitation');
 const AuditLog = require('../models/auditLog');
 const logEvent = require('../helper/logEvent');
 
+// Create a new user
+//Create User
+
 
 // Create a new user within the same organization as the admin
 
