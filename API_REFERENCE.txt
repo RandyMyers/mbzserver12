@@ -18,7 +18,24 @@
 13. Email Management
 14. Website Management
 15. Subscriptions
-16. Miscellaneous
+16. Dashboard Overview
+17. User Preferences
+18. Exchange Rates
+19. Call Scheduler
+20. Payment Gateways
+21. Chat Integrations
+22. Templates
+23. Draft/Trash/Archive Management
+24. Affiliate Marketing Materials
+25. Payouts
+26. Commissions
+27. Referrals
+28. Groups
+29. Roles
+30. Invitations
+31. Audit Logs
+32. Email Logs
+33. Miscellaneous
 
 ## 1. AUTHENTICATION
 
@@ -27,10 +44,12 @@
 **Body:**
 ```json
 {
-  "name": "string",
-  "businessName": "string", 
-  "email": "string",
-  "password": "string"
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "securePassword123",
+  "companyName": "My Company",
+  "referralCode": "REF123"
 }
 ```
 **Response:**
@@ -38,13 +57,14 @@
 {
   "success": true,
   "message": "User registered successfully",
-  "userId": "string",
-  "username": "string",
-  "email": "string",
-  "role": "string",
-  "token": "string",
-  "organizationCode": "string",
-  "organizationId": "string"
+  "userId": "user_id",
+  "username": "john.doe",
+  "email": "john.doe@example.com",
+  "role": "admin",
+  "organization": "My Company",
+  "organizationId": "org_id",
+  "organizationCode": "ORG123",
+  "token": "jwt_token_here"
 }
 ```
 
@@ -53,8 +73,8 @@
 **Body:**
 ```json
 {
-  "email": "string",
-  "password": "string"
+  "email": "john.doe@example.com",
+  "password": "securePassword123"
 }
 ```
 **Response:**
@@ -62,16 +82,16 @@
 {
   "success": true,
   "message": "Login successful",
-  "token": "string",
-  "userId": "string",
-  "username": "string",
-  "email": "string",
-  "role": "string",
-  "organizationId": "string",
-  "organization": "string",
-  "organizationCode": "string",
-  "profilePicture": "string",
-  "status": "string"
+  "token": "jwt_token_here",
+  "userId": "user_id",
+  "username": "john.doe",
+  "email": "john.doe@example.com",
+  "role": "admin",
+  "organizationId": "org_id",
+  "organization": "My Company",
+  "organizationCode": "ORG123",
+  "profilePicture": "https://example.com/profile.jpg",
+  "status": "active"
 }
 ```
 
@@ -80,11 +100,21 @@
 **Body:**
 ```json
 {
-  "username": "string",
-  "name": "string",
-  "email": "string",
-  "password": "string",
-  "role": "super-admin"
+  "username": "superadmin",
+  "fullName": "Super Admin",
+  "email": "admin@mbztech.com",
+  "password": "adminPassword123"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Super Admin registered successfully",
+  "userId": "admin_id",
+  "username": "superadmin",
+  "email": "admin@mbztech.com",
+  "role": "super_admin"
 }
 ```
 
@@ -93,8 +123,22 @@
 **Body:**
 ```json
 {
-  "username": "string",
-  "password": "string"
+  "username": "superadmin",
+  "password": "adminPassword123"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Super Admin login successful",
+  "token": "jwt_token_here",
+  "userId": "admin_id",
+  "username": "superadmin",
+  "email": "admin@mbztech.com",
+  "userRole": "super_admin",
+  "profilePicture": "https://example.com/admin.jpg",
+  "status": "active"
 }
 ```
 
@@ -103,10 +147,17 @@
 **Body:**
 ```json
 {
-  "userId": "string",
-  "organizationId": "string",
-  "currentPassword": "string",
-  "newPassword": "string"
+  "userId": "user_id",
+  "organizationId": "org_id",
+  "currentPassword": "oldPassword123",
+  "newPassword": "newPassword123"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Password updated successfully"
 }
 ```
 
@@ -115,690 +166,6002 @@
 **Body:**
 ```json
 {
-  "userId": "string",
-  "currentPassword": "string",
-  "newPassword": "string"
+  "userId": "admin_id",
+  "currentPassword": "oldAdminPassword",
+  "newPassword": "newAdminPassword"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Super Admin password updated successfully"
+}
+```
+
+### POST /auth/affiliate/register
+**Description:** Register an affiliate user
+**Body:**
+```json
+{
+  "fullName": "Sarah Johnson",
+  "email": "sarah@example.com",
+  "password": "affiliatePass123",
+  "phone": "+1234567890",
+  "referralCode": "AFF001"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Affiliate registered successfully",
+  "userId": "affiliate_id",
+  "username": "sarah.johnson",
+  "email": "sarah@example.com",
+  "role": "affiliate",
+  "token": "jwt_token_here"
+}
+```
+
+### POST /auth/affiliate/login
+**Description:** Login affiliate user
+**Body:**
+```json
+{
+  "email": "sarah@example.com",
+  "password": "affiliatePass123"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Affiliate login successful",
+  "token": "jwt_token_here",
+  "userId": "affiliate_id",
+  "username": "sarah.johnson",
+  "email": "sarah@example.com",
+  "role": "affiliate",
+  "status": "active"
 }
 ```
 
 ## 2. USERS
 
-### POST /users/create
-**Description:** Create a new user (Admin only)
-**Body:** User object with required fields
-**Auth:** Required
-
 ### GET /users/all
 **Description:** Get all users (Super admin only)
+**Query Parameters:**
+- `organizationId` (optional): Filter by organization
+- `role` (optional): Filter by role
+- `status` (optional): Filter by status
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "user_id",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "role": "user",
+      "phone": "+1234567890",
+      "department": "Sales",
+      "position": "Sales Representative",
+      "status": "active",
+      "organizationId": "org_id",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalUsers": 50
+}
+```
 **Auth:** Required
 
 ### GET /users/get/:userId
 **Description:** Get user by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "user_id",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "role": "user",
+    "phone": "+1234567890",
+    "department": "Sales",
+    "position": "Sales Representative",
+    "status": "active",
+    "organizationId": "org_id",
+    "displayCurrency": "USD",
+    "profilePicture": "https://example.com/profile.jpg",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 **Auth:** Required
 
 ### PATCH /users/update/:userId
 **Description:** Update user details
-**Body:** User update object
-**Auth:** Required
-
-### PATCH /users/change/:userId/status
-**Description:** Update user status (active/inactive)
-**Body:** `{"status": "active" | "inactive"}`
-**Auth:** Required
-
-### GET /users/organization/:organizationId
-**Description:** Get all users in an organization
+**Body:**
+```json
+{
+  "firstName": "Updated John",
+  "lastName": "Updated Doe",
+  "email": "updated.john@example.com",
+  "phone": "+1234567891",
+  "department": "Marketing",
+  "position": "Marketing Manager",
+  "displayCurrency": "EUR"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "user_id",
+    "firstName": "Updated John",
+    "lastName": "Updated Doe",
+    "email": "updated.john@example.com",
+    "phone": "+1234567891",
+    "department": "Marketing",
+    "position": "Marketing Manager",
+    "displayCurrency": "EUR",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 **Auth:** Required
 
 ### DELETE /users/delete/:userId
 **Description:** Delete a user
-**Auth:** Required
-
-### PATCH /users/:userId/profile-picture
-**Description:** Update user profile picture
-**Body:** Form data with image file
+**Response:**
+```json
+{
+  "success": true,
+  "message": "User deleted successfully"
+}
+```
 **Auth:** Required
 
 ## 3. ORGANIZATIONS
 
-### POST /organization/create
+### POST /organizations/create
 **Description:** Create a new organization
 **Body:**
 ```json
 {
-  "name": "string",
-  "description": "string",
-  "businessType": "string",
+  "name": "My Company",
+  "description": "A technology company",
+  "industry": "Technology",
+  "size": "50-100",
+  "website": "https://mycompany.com",
   "address": {
-    "street": "string",
-    "city": "string",
-    "state": "string",
-    "postalCode": "string",
-    "country": "string"
+    "street": "123 Business St",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": "10001",
+    "country": "US"
   },
-  "phone": "string",
-  "email": "string"
+  "contact": {
+    "email": "contact@mycompany.com",
+    "phone": "+1234567890"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "org_id",
+    "name": "My Company",
+    "description": "A technology company",
+    "industry": "Technology",
+    "size": "50-100",
+    "website": "https://mycompany.com",
+    "address": {
+      "street": "123 Business St",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "contact": {
+      "email": "contact@mycompany.com",
+      "phone": "+1234567890"
+    },
+    "organizationCode": "ORG123",
+    "createdBy": "user_id",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
 }
 ```
 
-### GET /organization/all
-**Description:** Get all organizations (Super admin only)
+### GET /organizations/all
+**Description:** Get all organizations
+**Query Parameters:**
+- `industry` (optional): Filter by industry
+- `size` (optional): Filter by company size
+- `search` (optional): Search by name
+- `page` (optional): Page number
+- `limit` (optional): Items per page
 
-### GET /organization/get/:organizationId
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "org_id",
+      "name": "My Company",
+      "industry": "Technology",
+      "size": "50-100",
+      "website": "https://mycompany.com",
+      "organizationCode": "ORG123",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalOrganizations": 50
+}
+```
+
+### GET /organizations/get/:organizationId
 **Description:** Get organization by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "org_id",
+    "name": "My Company",
+    "description": "A technology company",
+    "industry": "Technology",
+    "size": "50-100",
+    "website": "https://mycompany.com",
+    "address": {
+      "street": "123 Business St",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "contact": {
+      "email": "contact@mycompany.com",
+      "phone": "+1234567890"
+    },
+    "organizationCode": "ORG123",
+    "createdBy": "user_id",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
-### PATCH /organization/update/:organizationId
+### PATCH /organizations/update/:organizationId
 **Description:** Update organization details
-**Body:** Organization update object
+**Body:**
+```json
+{
+  "name": "Updated Company Name",
+  "description": "Updated company description",
+  "industry": "Software",
+  "website": "https://updatedcompany.com"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "org_id",
+    "name": "Updated Company Name",
+    "description": "Updated company description",
+    "industry": "Software",
+    "website": "https://updatedcompany.com",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
-### DELETE /organization/delete/:organizationId
-**Description:** Delete organization
-
-### PATCH /organization/logo/:organizationId
-**Description:** Update organization logo
-**Body:** Form data with logo file
+### DELETE /organizations/delete/:organizationId
+**Description:** Delete an organization
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Organization deleted successfully"
+}
+```
 
 ## 4. ORDERS
 
 ### POST /orders/create
 **Description:** Create a new order
-**Body:** Order object with required fields
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "customerId": "customer_id",
+  "orderNumber": "ORD-001",
+  "status": "pending",
+  "total": 299.99,
+  "currency": "USD",
+  "line_items": [
+    {
+      "inventoryId": "product_id",
+      "name": "Premium Widget",
+      "quantity": 2,
+      "price": 149.99,
+      "subtotal": 299.98
+    }
+  ],
+  "billing_address": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "phone": "+1234567890",
+    "address1": "123 Main St",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": "10001",
+    "country": "US"
+  },
+  "shipping_address": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "address1": "123 Main St",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": "10001",
+    "country": "US"
+  },
+  "payment_method": "credit_card",
+  "shipping_method": "standard",
+  "notes": "Please deliver before 5 PM"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "order_id",
+    "organizationId": "org_id",
+    "customerId": "customer_id",
+    "orderNumber": "ORD-001",
+    "status": "pending",
+    "total": 299.99,
+    "currency": "USD",
+    "line_items": [
+      {
+        "inventoryId": "product_id",
+        "name": "Premium Widget",
+        "quantity": 2,
+        "price": 149.99,
+        "subtotal": 299.98
+      }
+    ],
+    "billing_address": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@example.com",
+      "phone": "+1234567890",
+      "address1": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "shipping_address": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "address1": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "payment_method": "credit_card",
+    "shipping_method": "standard",
+    "notes": "Please deliver before 5 PM",
+    "date_created": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
 ### GET /orders/all
 **Description:** Get all orders
+**Query Parameters:**
+- `organizationId` (optional): Filter by organization
+- `status` (optional): Filter by status
+- `startDate` (optional): Filter by start date
+- `endDate` (optional): Filter by end date
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "order_id",
+      "orderNumber": "ORD-001",
+      "status": "completed",
+      "total": 299.99,
+      "currency": "USD",
+      "customerId": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com"
+      },
+      "date_created": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalOrders": 50
+}
+```
 
 ### GET /orders/organization/:organizationId
 **Description:** Get all orders for an organization
+**Query Parameters:**
+- `status` (optional): Filter by status
+- `startDate` (optional): Filter by start date
+- `endDate` (optional): Filter by end date
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "order_id",
+      "orderNumber": "ORD-001",
+      "status": "completed",
+      "total": 299.99,
+      "currency": "USD",
+      "customerId": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com"
+      },
+      "date_created": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalOrders": 50
+}
+```
 
 ### GET /orders/store/:storeId
 **Description:** Get all orders for a specific store
+**Query Parameters:**
+- `status` (optional): Filter by status
+- `startDate` (optional): Filter by start date
+- `endDate` (optional): Filter by end date
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "order_id",
+      "orderNumber": "ORD-001",
+      "status": "completed",
+      "total": 299.99,
+      "currency": "USD",
+      "storeId": "store_id",
+      "customerId": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com"
+      },
+      "date_created": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalOrders": 50
+}
+```
 
 ### GET /orders/get/:orderId
 **Description:** Get order by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "order_id",
+    "organizationId": "org_id",
+    "customerId": "customer_id",
+    "orderNumber": "ORD-001",
+    "status": "completed",
+    "total": 299.99,
+    "currency": "USD",
+    "line_items": [
+      {
+        "inventoryId": "product_id",
+        "name": "Premium Widget",
+        "quantity": 2,
+        "price": 149.99,
+        "subtotal": 299.98
+      }
+    ],
+    "billing_address": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@example.com",
+      "phone": "+1234567890",
+      "address1": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "shipping_address": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "address1": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "payment_method": "credit_card",
+    "shipping_method": "standard",
+    "notes": "Please deliver before 5 PM",
+    "date_created": "2024-01-01T00:00:00Z",
+    "date_updated": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
 ### PATCH /orders/update/:orderId
 **Description:** Update order details
-**Body:** Order update object
+**Body:**
+```json
+{
+  "status": "shipped",
+  "tracking_number": "TRK123456789",
+  "shipping_date": "2024-01-02T00:00:00Z",
+  "notes": "Order shipped via express delivery"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "order_id",
+    "status": "shipped",
+    "tracking_number": "TRK123456789",
+    "shipping_date": "2024-01-02T00:00:00Z",
+    "notes": "Order shipped via express delivery",
+    "date_updated": "2024-01-02T00:00:00Z"
+  }
+}
+```
 
 ### DELETE /orders/delete/:orderId
 **Description:** Delete an order
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Order deleted successfully"
+}
+```
 
 ### POST /orders/sync/:storeId/:organizationId
 **Description:** Sync orders from external store
-**Body:** `{"userId": "string"}`
-
-### Analytics Endpoints:
-- GET /orders/analytics/cross-store/:organizationId
-- GET /orders/analytics/temporal/:organizationId
-- GET /orders/analytics/customers/:organizationId
-- GET /orders/analytics/products/:organizationId
-- GET /orders/analytics/financial/:organizationId
-- GET /orders/analytics/operations/:organizationId
-- GET /orders/analytics/geospatial/:organizationId
-- GET /orders/analytics/status/:organizationId
-- GET /orders/analytics/funnel/:organizationId
-- GET /orders/analytics/ltv/:organizationId
+**Body:**
+```json
+{
+  "userId": "user_id",
+  "syncType": "all"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "syncId": "sync_id",
+    "storeId": "store_id",
+    "organizationId": "org_id",
+    "syncType": "all",
+    "status": "started",
+    "startedAt": "2024-01-01T12:00:00Z",
+    "estimatedDuration": "10 minutes",
+    "ordersToSync": 150
+  }
+}
+```
 
 ## 5. INVENTORY
 
 ### POST /inventory/create
 **Description:** Create a new product
-**Body:** Product object
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "name": "Premium Widget",
+  "description": "High-quality widget for all your needs",
+  "sku": "WID-001",
+  "price": 29.99,
+  "comparePrice": 39.99,
+  "cost": 15.00,
+  "currency": "USD",
+  "category": "electronics",
+  "tags": ["widget", "premium", "electronics"],
+  "inventory": {
+    "quantity": 100,
+    "lowStockThreshold": 10,
+    "trackQuantity": true
+  },
+  "images": [
+    {
+      "url": "https://example.com/widget1.jpg",
+      "alt": "Widget Front View"
+    }
+  ],
+  "variants": [
+    {
+      "name": "Color",
+      "options": ["Red", "Blue", "Green"]
+    }
+  ],
+  "status": "active"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "product_id",
+    "organizationId": "org_id",
+    "name": "Premium Widget",
+    "description": "High-quality widget for all your needs",
+    "sku": "WID-001",
+    "price": 29.99,
+    "comparePrice": 39.99,
+    "cost": 15.00,
+    "currency": "USD",
+    "category": "electronics",
+    "tags": ["widget", "premium", "electronics"],
+    "inventory": {
+      "quantity": 100,
+      "lowStockThreshold": 10,
+      "trackQuantity": true
+    },
+    "images": [
+      {
+        "url": "https://example.com/widget1.jpg",
+        "alt": "Widget Front View"
+      }
+    ],
+    "variants": [
+      {
+        "name": "Color",
+        "options": ["Red", "Blue", "Green"]
+      }
+    ],
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
 ### GET /inventory/organization/:organizationId
 **Description:** Get all products by organization
+**Query Parameters:**
+- `category` (optional): Filter by category
+- `status` (optional): Filter by status
+- `search` (optional): Search by name or SKU
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "product_id",
+      "name": "Premium Widget",
+      "sku": "WID-001",
+      "price": 29.99,
+      "currency": "USD",
+      "category": "electronics",
+      "inventory": {
+        "quantity": 100,
+        "lowStockThreshold": 10
+      },
+      "status": "active",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalProducts": 50
+}
+```
 
 ### GET /inventory/store/:storeId
 **Description:** Get all products by store
+**Query Parameters:**
+- `category` (optional): Filter by category
+- `status` (optional): Filter by status
+- `search` (optional): Search by name or SKU
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "product_id",
+      "name": "Premium Widget",
+      "sku": "WID-001",
+      "price": 29.99,
+      "currency": "USD",
+      "category": "electronics",
+      "inventory": {
+        "quantity": 100,
+        "lowStockThreshold": 10
+      },
+      "status": "active",
+      "storeId": "store_id",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalProducts": 50
+}
+```
 
 ### GET /inventory/all
 **Description:** Get all products
+**Query Parameters:**
+- `organizationId` (optional): Filter by organization
+- `category` (optional): Filter by category
+- `status` (optional): Filter by status
+- `search` (optional): Search by name or SKU
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "product_id",
+      "name": "Premium Widget",
+      "sku": "WID-001",
+      "price": 29.99,
+      "currency": "USD",
+      "category": "electronics",
+      "inventory": {
+        "quantity": 100,
+        "lowStockThreshold": 10
+      },
+      "status": "active",
+      "organizationId": "org_id",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalProducts": 50
+}
+```
 
 ### GET /inventory/get/:productId
 **Description:** Get product by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "product_id",
+    "organizationId": "org_id",
+    "name": "Premium Widget",
+    "description": "High-quality widget for all your needs",
+    "sku": "WID-001",
+    "price": 29.99,
+    "comparePrice": 39.99,
+    "cost": 15.00,
+    "currency": "USD",
+    "category": "electronics",
+    "tags": ["widget", "premium", "electronics"],
+    "inventory": {
+      "quantity": 100,
+      "lowStockThreshold": 10,
+      "trackQuantity": true
+    },
+    "images": [
+      {
+        "url": "https://example.com/widget1.jpg",
+        "alt": "Widget Front View"
+      }
+    ],
+    "variants": [
+      {
+        "name": "Color",
+        "options": ["Red", "Blue", "Green"]
+      }
+    ],
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
 ### PATCH /inventory/update/:productId
-**Description:** Update product
-**Body:** Product update object
+**Description:** Update product details
+**Body:**
+```json
+{
+  "name": "Updated Premium Widget",
+  "price": 34.99,
+  "inventory": {
+    "quantity": 85,
+    "lowStockThreshold": 15
+  },
+  "status": "active"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "product_id",
+    "name": "Updated Premium Widget",
+    "price": 34.99,
+    "inventory": {
+      "quantity": 85,
+      "lowStockThreshold": 15
+    },
+    "status": "active",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
 ### DELETE /inventory/delete/:productId
-**Description:** Delete product
-
-### DELETE /inventory/deleteAll/:storeId
-**Description:** Delete all products by store
+**Description:** Delete a product
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Product deleted successfully"
+}
+```
 
 ### POST /inventory/sync/:storeId/:organizationId
 **Description:** Sync products from external store
-
-### Metrics Endpoints:
-- GET /inventory/metrics/total-products/:organizationId
-- GET /inventory/metrics/in-stock/:organizationId
-- GET /inventory/metrics/low-stock/:organizationId
-- GET /inventory/metrics/out-of-stock/:organizationId
-- GET /inventory/metrics/category-count/:organizationId
-- GET /inventory/metrics/store-count/:organizationId
-- GET /inventory/metrics/total-value/:organizationId
-- GET /inventory/metrics/avg-price/:organizationId
-- GET /inventory/metrics/on-sale/:organizationId
-- GET /inventory/metrics/avg-rating/:organizationId
+**Body:**
+```json
+{
+  "userId": "user_id",
+  "syncType": "all"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "syncId": "sync_id",
+    "storeId": "store_id",
+    "organizationId": "org_id",
+    "syncType": "all",
+    "status": "started",
+    "startedAt": "2024-01-01T12:00:00Z",
+    "estimatedDuration": "15 minutes",
+    "productsToSync": 200
+  }
+}
+```
 
 ## 6. CUSTOMERS
 
 ### POST /customers/create
 **Description:** Create a new customer
-**Body:** Customer object
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "jane.smith@example.com",
+  "phone": "+1234567890",
+  "address": {
+    "address1": "456 Oak St",
+    "city": "Los Angeles",
+    "state": "CA",
+    "postalCode": "90210",
+    "country": "US"
+  },
+  "tags": ["vip", "returning"],
+  "notes": "Preferred customer with special pricing",
+  "status": "active"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "customer_id",
+    "organizationId": "org_id",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "email": "jane.smith@example.com",
+    "phone": "+1234567890",
+    "address": {
+      "address1": "456 Oak St",
+      "city": "Los Angeles",
+      "state": "CA",
+      "postalCode": "90210",
+      "country": "US"
+    },
+    "tags": ["vip", "returning"],
+    "notes": "Preferred customer with special pricing",
+    "status": "active",
+    "totalOrders": 0,
+    "totalSpent": 0,
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /customers/organization/:organizationId
+**Description:** Get all customers by organization
+**Query Parameters:**
+- `status` (optional): Filter by status
+- `tags` (optional): Filter by tags
+- `search` (optional): Search by name or email
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "customer_id",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane.smith@example.com",
+      "phone": "+1234567890",
+      "tags": ["vip", "returning"],
+      "status": "active",
+      "totalOrders": 5,
+      "totalSpent": 1250.00,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalCustomers": 50
+}
+```
 
 ### GET /customers/all
 **Description:** Get all customers
+**Query Parameters:**
+- `organizationId` (optional): Filter by organization
+- `status` (optional): Filter by status
+- `tags` (optional): Filter by tags
+- `search` (optional): Search by name or email
+- `page` (optional): Page number
+- `limit` (optional): Items per page
 
-### GET /customers/get/:id
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "customer_id",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane.smith@example.com",
+      "phone": "+1234567890",
+      "tags": ["vip", "returning"],
+      "status": "active",
+      "totalOrders": 5,
+      "totalSpent": 1250.00,
+      "organizationId": "org_id",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalCustomers": 50
+}
+```
+
+### GET /customers/get/:customerId
 **Description:** Get customer by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "customer_id",
+    "organizationId": "org_id",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "email": "jane.smith@example.com",
+    "phone": "+1234567890",
+    "address": {
+      "address1": "456 Oak St",
+      "city": "Los Angeles",
+      "state": "CA",
+      "postalCode": "90210",
+      "country": "US"
+    },
+    "tags": ["vip", "returning"],
+    "notes": "Preferred customer with special pricing",
+    "status": "active",
+    "totalOrders": 5,
+    "totalSpent": 1250.00,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
-### GET /customers/organization/:organizationId
-**Description:** Get customers by organization
+### PATCH /customers/update/:customerId
+**Description:** Update customer details
+**Body:**
+```json
+{
+  "firstName": "Updated Jane",
+  "lastName": "Updated Smith",
+  "email": "updated.jane@example.com",
+  "phone": "+1234567891",
+  "tags": ["vip", "returning", "premium"]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "customer_id",
+    "firstName": "Updated Jane",
+    "lastName": "Updated Smith",
+    "email": "updated.jane@example.com",
+    "phone": "+1234567891",
+    "tags": ["vip", "returning", "premium"],
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
-### PATCH /customers/update/:id
-**Description:** Update customer
-**Body:** Customer update object
-
-### DELETE /customers/delete/:id
-**Description:** Delete customer
-
-### GET /customers/store/:storeId
-**Description:** Get customers by store
-
-### POST /customers/sync/:storeId/:organizationId
-**Description:** Sync customers from external store
+### DELETE /customers/delete/:customerId
+**Description:** Delete a customer
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Customer deleted successfully"
+}
+```
 
 ## 7. TASKS
 
 ### POST /tasks/create
 **Description:** Create a new task
-**Body:** Task object
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "title": "Complete project proposal",
+  "description": "Finish the Q1 project proposal document",
+  "priority": "high",
+  "status": "pending",
+  "assignedTo": "user_id",
+  "dueDate": "2024-01-15T00:00:00Z",
+  "category": "project",
+  "tags": ["proposal", "q1"],
+  "estimatedHours": 8,
+  "attachments": [
+    {
+      "name": "proposal_template.docx",
+      "url": "https://example.com/files/template.docx"
+    }
+  ]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "task_id",
+    "organizationId": "org_id",
+    "title": "Complete project proposal",
+    "description": "Finish the Q1 project proposal document",
+    "priority": "high",
+    "status": "pending",
+    "assignedTo": "user_id",
+    "dueDate": "2024-01-15T00:00:00Z",
+    "category": "project",
+    "tags": ["proposal", "q1"],
+    "estimatedHours": 8,
+    "attachments": [
+      {
+        "name": "proposal_template.docx",
+        "url": "https://example.com/files/template.docx"
+      }
+    ],
+    "createdBy": "user_id",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
 ### GET /tasks/organization/:organizationId
-**Description:** Get tasks by organization
+**Description:** Get all tasks by organization
+**Query Parameters:**
+- `status` (optional): Filter by status
+- `priority` (optional): Filter by priority
+- `assignedTo` (optional): Filter by assigned user
+- `category` (optional): Filter by category
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "task_id",
+      "title": "Complete project proposal",
+      "description": "Finish the Q1 project proposal document",
+      "priority": "high",
+      "status": "pending",
+      "assignedTo": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com"
+      },
+      "dueDate": "2024-01-15T00:00:00Z",
+      "category": "project",
+      "tags": ["proposal", "q1"],
+      "estimatedHours": 8,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalTasks": 50
+}
+```
+
+### GET /tasks/user/:userId
+**Description:** Get tasks assigned to a user
+**Query Parameters:**
+- `status` (optional): Filter by status
+- `priority` (optional): Filter by priority
+- `category` (optional): Filter by category
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "task_id",
+      "title": "Complete project proposal",
+      "description": "Finish the Q1 project proposal document",
+      "priority": "high",
+      "status": "pending",
+      "dueDate": "2024-01-15T00:00:00Z",
+      "category": "project",
+      "tags": ["proposal", "q1"],
+      "estimatedHours": 8,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalTasks": 25
+}
+```
+
+### GET /tasks/all
+**Description:** Get all tasks
+**Query Parameters:**
+- `organizationId` (optional): Filter by organization
+- `status` (optional): Filter by status
+- `priority` (optional): Filter by priority
+- `assignedTo` (optional): Filter by assigned user
+- `category` (optional): Filter by category
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "task_id",
+      "title": "Complete project proposal",
+      "description": "Finish the Q1 project proposal document",
+      "priority": "high",
+      "status": "pending",
+      "assignedTo": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com"
+      },
+      "dueDate": "2024-01-15T00:00:00Z",
+      "category": "project",
+      "tags": ["proposal", "q1"],
+      "estimatedHours": 8,
+      "organizationId": "org_id",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalTasks": 50
+}
+```
 
 ### GET /tasks/get/:taskId
 **Description:** Get task by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "task_id",
+    "organizationId": "org_id",
+    "title": "Complete project proposal",
+    "description": "Finish the Q1 project proposal document",
+    "priority": "high",
+    "status": "pending",
+    "assignedTo": "user_id",
+    "dueDate": "2024-01-15T00:00:00Z",
+    "category": "project",
+    "tags": ["proposal", "q1"],
+    "estimatedHours": 8,
+    "attachments": [
+      {
+        "name": "proposal_template.docx",
+        "url": "https://example.com/files/template.docx"
+      }
+    ],
+    "createdBy": "user_id",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
 ### PATCH /tasks/update/:taskId
-**Description:** Update task
-**Body:** Task update object
+**Description:** Update task details
+**Body:**
+```json
+{
+  "status": "in_progress",
+  "priority": "medium",
+  "estimatedHours": 6,
+  "notes": "Started working on the proposal"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "task_id",
+    "status": "in_progress",
+    "priority": "medium",
+    "estimatedHours": 6,
+    "notes": "Started working on the proposal",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
 ### DELETE /tasks/delete/:taskId
-**Description:** Delete task
-
-### PATCH /tasks/status/:taskId
-**Description:** Update task status (for drag and drop)
-**Body:** `{"status": "string"}`
-
-### Subtask Management:
-- POST /tasks/subtasks/create/:taskId
-- PATCH /tasks/:taskId/subtasks/update/:subtaskId
-- DELETE /tasks/:taskId/subtasks/delete/:subtaskId
-
-### POST /tasks/:taskId/comments
-**Description:** Add comment to task
-**Body:** `{"comment": "string"}`
-
-### GET /tasks/user/:userId
-**Description:** Get tasks by user
+**Description:** Delete a task
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Task deleted successfully"
+}
+```
 
 ## 8. AFFILIATES
 
-### GET /affiliates
-**Description:** Get all affiliates (Admin only)
-**Auth:** Required, Admin only
+### POST /affiliates/create
+**Description:** Create a new affiliate
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "firstName": "Sarah",
+  "lastName": "Johnson",
+  "email": "sarah.johnson@example.com",
+  "phone": "+1234567890",
+  "website": "https://sarahsblog.com",
+  "commissionRate": 10.5,
+  "paymentDetails": {
+    "method": "bank_transfer",
+    "accountNumber": "1234567890",
+    "bankName": "Chase Bank",
+    "accountName": "Sarah Johnson"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "affiliate_id",
+    "userId": "user_id",
+    "commissionRate": 10.5,
+    "trackingCode": "AFF123456",
+    "status": "pending",
+    "paymentDetails": {
+      "method": "bank_transfer",
+      "accountNumber": "1234567890",
+      "bankName": "Chase Bank",
+      "accountName": "Sarah Johnson"
+    },
+    "earnings": 0,
+    "totalReferrals": 0,
+    "totalCommissions": 0,
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
-### POST /affiliates
-**Description:** Create affiliate (Admin only)
-**Body:** Affiliate object
-**Auth:** Required, Admin only
+### GET /affiliates/all
+**Description:** Get all affiliates
+**Query Parameters:**
+- `organizationId` (optional): Filter by organization
+- `status` (optional): Filter by status
+- `search` (optional): Search by name or email
+- `page` (optional): Page number
+- `limit` (optional): Items per page
 
-### GET /affiliates/:id
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "affiliate_id",
+      "userId": {
+        "fullName": "Sarah Johnson",
+        "email": "sarah.johnson@example.com"
+      },
+      "commissionRate": 10.5,
+      "trackingCode": "AFF123456",
+      "status": "active",
+      "earnings": 1250.00,
+      "totalReferrals": 25,
+      "totalCommissions": 15,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalAffiliates": 50
+}
+```
+
+### GET /affiliates/get/:affiliateId
 **Description:** Get affiliate by ID
-**Auth:** Required, Admin only
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "affiliate_id",
+    "userId": {
+      "fullName": "Sarah Johnson",
+      "email": "sarah.johnson@example.com"
+    },
+    "commissionRate": 10.5,
+    "trackingCode": "AFF123456",
+    "status": "active",
+    "paymentDetails": {
+      "method": "bank_transfer",
+      "accountNumber": "1234567890",
+      "bankName": "Chase Bank",
+      "accountName": "Sarah Johnson"
+    },
+    "earnings": 1250.00,
+    "totalReferrals": 25,
+    "totalCommissions": 15,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
-### PATCH /affiliates/:id
-**Description:** Update affiliate
-**Body:** Affiliate update object
-**Auth:** Required, Admin only
+### PATCH /affiliates/update/:affiliateId
+**Description:** Update affiliate details
+**Body:**
+```json
+{
+  "commissionRate": 12.0,
+  "status": "active",
+  "paymentDetails": {
+    "method": "paypal",
+    "email": "sarah@paypal.com"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "affiliate_id",
+    "commissionRate": 12.0,
+    "status": "active",
+    "paymentDetails": {
+      "method": "paypal",
+      "email": "sarah@paypal.com"
+    },
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
-### DELETE /affiliates/:id
-**Description:** Delete affiliate
-**Auth:** Required, Admin only
-
-### PATCH /affiliates/:id/status
+### PATCH /affiliates/:affiliateId/status
 **Description:** Update affiliate status
-**Auth:** Required, Admin only
+**Body:**
+```json
+{
+  "status": "active"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "affiliate_id",
+    "status": "active",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
-### PATCH /affiliates/:id/commission-rate
-**Description:** Update commission rate
-**Auth:** Required, Admin only
+### PATCH /affiliates/:affiliateId/commission-rate
+**Description:** Update affiliate commission rate
+**Body:**
+```json
+{
+  "commissionRate": 15.0
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "affiliate_id",
+    "commissionRate": 15.0,
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
-### Affiliate Dashboard (for affiliates themselves):
-- GET /affiliates/dashboard/overview
-- GET /affiliates/dashboard/referrals
-- GET /affiliates/dashboard/commissions
-- GET /affiliates/dashboard/payouts
-- GET /affiliates/dashboard/materials
+### DELETE /affiliates/delete/:affiliateId
+**Description:** Delete an affiliate
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Affiliate deleted successfully"
+}
+```
 
-### Affiliate Profile:
-- GET /affiliates/profile
-- PATCH /affiliates/profile
+### GET /affiliates/:affiliateId/referrals
+**Description:** Get referrals for an affiliate
+**Query Parameters:**
+- `status` (optional): Filter by status
+- `page` (optional): Page number
+- `limit` (optional): Items per page
 
-### Affiliate Settings:
-- GET /affiliates/settings
-- PATCH /affiliates/settings
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "referral_id",
+      "affiliateId": "affiliate_id",
+      "customerId": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com"
+      },
+      "orderId": "order_id",
+      "orderAmount": 299.99,
+      "commission": 29.99,
+      "status": "converted",
+      "conversionDate": "2024-01-15T00:00:00Z",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalReferrals": 25
+}
+```
 
-### Referral Management:
-- GET /affiliates/:affiliateId/referrals
-- POST /affiliates/:affiliateId/referrals
-- GET /affiliates/:affiliateId/referrals/:id
-- PATCH /affiliates/:affiliateId/referrals/:id
+### POST /affiliates/:affiliateId/referrals
+**Description:** Create a new referral
+**Body:**
+```json
+{
+  "customerId": "customer_id",
+  "orderId": "order_id",
+  "orderAmount": 299.99,
+  "commission": 29.99
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "referral_id",
+    "affiliateId": "affiliate_id",
+    "customerId": "customer_id",
+    "orderId": "order_id",
+    "orderAmount": 299.99,
+    "commission": 29.99,
+    "status": "pending",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
-### Commission Management:
-- GET /affiliates/:affiliateId/commissions
-- POST /affiliates/:affiliateId/commissions
-- GET /affiliates/:affiliateId/commissions/:id
-- PATCH /affiliates/:affiliateId/commissions/:id
+### GET /affiliates/:affiliateId/commissions
+**Description:** Get commissions for an affiliate
+**Query Parameters:**
+- `status` (optional): Filter by status
+- `page` (optional): Page number
+- `limit` (optional): Items per page
 
-### Payout Management:
-- GET /affiliates/:affiliateId/payouts
-- POST /affiliates/:affiliateId/payouts
-- GET /affiliates/:affiliateId/payouts/:id
-- PATCH /affiliates/:affiliateId/payouts/:id
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "commission_id",
+      "affiliateId": "affiliate_id",
+      "referralId": "referral_id",
+      "amount": 29.99,
+      "status": "pending",
+      "payoutDate": null,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalCommissions": 15
+}
+```
 
-### Marketing Materials:
-- GET /affiliates/:affiliateId/materials
-- POST /affiliates/:affiliateId/materials
-- GET /affiliates/:affiliateId/materials/:id
-- PATCH /affiliates/:affiliateId/materials/:id
-- DELETE /affiliates/:affiliateId/materials/:id
+### POST /affiliates/:affiliateId/commissions
+**Description:** Create a new commission
+**Body:**
+```json
+{
+  "referralId": "referral_id",
+  "amount": 29.99
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "commission_id",
+    "affiliateId": "affiliate_id",
+    "referralId": "referral_id",
+    "amount": 29.99,
+    "status": "pending",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /affiliates/:affiliateId/payouts
+**Description:** Get payouts for an affiliate
+**Query Parameters:**
+- `status` (optional): Filter by status
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "payout_id",
+      "affiliateId": "affiliate_id",
+      "amount": 500.00,
+      "status": "completed",
+      "paymentMethod": "bank_transfer",
+      "transactionId": "TXN123456",
+      "payoutDate": "2024-01-15T00:00:00Z",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalPayouts": 10
+}
+```
+
+### POST /affiliates/:affiliateId/payouts
+**Description:** Create a new payout
+**Body:**
+```json
+{
+  "amount": 500.00,
+  "paymentMethod": "bank_transfer"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "payout_id",
+    "affiliateId": "affiliate_id",
+    "amount": 500.00,
+    "status": "pending",
+    "paymentMethod": "bank_transfer",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /affiliates/:affiliateId/materials
+**Description:** Get marketing materials for an affiliate
+**Query Parameters:**
+- `type` (optional): Filter by material type
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "material_id",
+      "affiliateId": "affiliate_id",
+      "name": "Product Banner",
+      "type": "banner",
+      "url": "https://example.com/banner.jpg",
+      "description": "High-quality product banner",
+      "status": "active",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalMaterials": 20
+}
+```
+
+### POST /affiliates/:affiliateId/materials
+**Description:** Create marketing material for an affiliate
+**Body:**
+```json
+{
+  "name": "Product Banner",
+  "type": "banner",
+  "url": "https://example.com/banner.jpg",
+  "description": "High-quality product banner"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "material_id",
+    "affiliateId": "affiliate_id",
+    "name": "Product Banner",
+    "type": "banner",
+    "url": "https://example.com/banner.jpg",
+    "description": "High-quality product banner",
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /affiliates/dashboard/overview
+**Description:** Get affiliate dashboard overview
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalReferrals": 25,
+    "activeReferrals": 18,
+    "conversionRate": 72.0,
+    "totalCommissions": 1250.00,
+    "pendingCommissions": 350.00,
+    "totalPayouts": 900.00,
+    "earnings": 1250.00,
+    "recentReferrals": [
+      {
+        "_id": "referral_id",
+        "customerName": "John Doe",
+        "orderAmount": 299.99,
+        "commission": 29.99,
+        "status": "converted",
+        "createdAt": "2024-01-15T00:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+### GET /affiliates/profile
+**Description:** Get affiliate profile
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "affiliate_id",
+    "userId": {
+      "fullName": "Sarah Johnson",
+      "email": "sarah.johnson@example.com"
+    },
+    "commissionRate": 10.5,
+    "trackingCode": "AFF123456",
+    "status": "active",
+    "paymentDetails": {
+      "method": "bank_transfer",
+      "accountNumber": "1234567890",
+      "bankName": "Chase Bank",
+      "accountName": "Sarah Johnson"
+    },
+    "earnings": 1250.00,
+    "totalReferrals": 25,
+    "totalCommissions": 15,
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PATCH /affiliates/profile
+**Description:** Update affiliate profile
+**Body:**
+```json
+{
+  "paymentDetails": {
+    "method": "paypal",
+    "email": "sarah@paypal.com"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "affiliate_id",
+    "paymentDetails": {
+      "method": "paypal",
+      "email": "sarah@paypal.com"
+    },
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
 ## 9. CAMPAIGNS
 
 ### POST /campaigns/create
-**Description:** Create a new campaign
-**Body:** Campaign object
+**Description:** Create a new email campaign
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "name": "Summer Sale Campaign",
+  "subject": "Get 50% Off This Summer!",
+  "description": "Promote our summer sale to existing customers",
+  "targetCategories": ["electronics", "clothing"],
+  "senderEmails": ["sender1@example.com", "sender2@example.com"],
+  "status": "draft"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "campaignId": "campaign_id"
+  }
+}
+```
 
 ### GET /campaigns/all
 **Description:** Get all campaigns
+**Query Parameters:**
+- `organizationId` (optional): Filter by organization
+- `status` (optional): Filter by status
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "campaign_id",
+      "name": "Summer Sale Campaign",
+      "subject": "Get 50% Off This Summer!",
+      "status": "active",
+      "targetCategories": ["electronics", "clothing"],
+      "senderEmails": ["sender1@example.com"],
+      "emailsSent": 1500,
+      "openRate": 25.5,
+      "clickRate": 8.2,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalCampaigns": 50
+}
+```
 
 ### GET /campaigns/get/:campaignId
 **Description:** Get campaign by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "campaign_id",
+    "organizationId": "org_id",
+    "name": "Summer Sale Campaign",
+    "subject": "Get 50% Off This Summer!",
+    "description": "Promote our summer sale to existing customers",
+    "targetCategories": ["electronics", "clothing"],
+    "senderEmails": ["sender1@example.com", "sender2@example.com"],
+    "targetContacts": ["contact1_id", "contact2_id"],
+    "emailTemplate": {
+      "_id": "template_id",
+      "subject": "Get 50% Off This Summer!",
+      "body": "<html>...</html>",
+      "trackingEnabled": true
+    },
+    "status": "active",
+    "emailsSent": 1500,
+    "openRate": 25.5,
+    "clickRate": 8.2,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
 ### PATCH /campaigns/update/:campaignId
-**Description:** Update campaign
-**Body:** Campaign update object
+**Description:** Update campaign details
+**Body:**
+```json
+{
+  "name": "Updated Summer Sale Campaign",
+  "subject": "Updated: Get 50% Off This Summer!",
+  "description": "Updated campaign description"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "campaign_id",
+    "name": "Updated Summer Sale Campaign",
+    "subject": "Updated: Get 50% Off This Summer!",
+    "description": "Updated campaign description",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
-### DELETE /campaigns/delete/:campaignId
-**Description:** Delete campaign
+### PATCH /campaigns/updateTemplate/:campaignId
+**Description:** Update campaign template
+**Body:**
+```json
+{
+  "templateId": "template_id",
+  "subject": "Get 50% Off This Summer!",
+  "body": "<html><body><h1>Summer Sale!</h1></body></html>",
+  "trackingEnabled": true
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "campaign": {
+      "_id": "campaign_id",
+      "emailTemplate": "template_id"
+    },
+    "template": {
+      "_id": "template_id",
+      "subject": "Get 50% Off This Summer!",
+      "body": "<html><body><h1>Summer Sale!</h1></body></html>",
+      "trackingEnabled": true
+    }
+  }
+}
+```
 
-### Specialized Updates:
-- PATCH /campaigns/updateTemplate/:campaignId
-- PATCH /campaigns/updateContacts/:campaignId
-- PATCH /campaigns/updateSenderEmails/:campaignId
-- PATCH /campaigns/updateTargetCategories/:campaignId
-- PATCH /campaigns/updateStatus/:campaignId
+### PATCH /campaigns/updateContacts/:campaignId
+**Description:** Update campaign target contacts
+**Body:**
+```json
+{
+  "contactIds": ["contact1_id", "contact2_id", "contact3_id"]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "campaign_id",
+    "targetContacts": ["contact1_id", "contact2_id", "contact3_id"],
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### PATCH /campaigns/updateSenderEmails/:campaignId
+**Description:** Update campaign sender emails
+**Body:**
+```json
+{
+  "senderEmailIds": ["sender1@example.com", "sender2@example.com"]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "campaign_id",
+    "senderEmails": ["sender1@example.com", "sender2@example.com"],
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### PATCH /campaigns/updateTargetCategories/:campaignId
+**Description:** Update campaign target categories
+**Body:**
+```json
+{
+  "targetCategories": ["electronics", "clothing", "home"]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "campaign_id",
+    "targetCategories": ["electronics", "clothing", "home"],
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### PATCH /campaigns/updateStatus/:campaignId
+**Description:** Update campaign status
+**Body:**
+```json
+{
+  "status": "active"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "campaign_id",
+    "status": "active",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
 ### POST /campaigns/start/:campaignId
 **Description:** Start a campaign
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "campaignId": "campaign_id",
+    "status": "active",
+    "startedAt": "2024-01-01T12:00:00Z",
+    "emailsToSend": 1500
+  }
+}
+```
+
+### DELETE /campaigns/delete/:campaignId
+**Description:** Delete a campaign
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Campaign deleted successfully"
+}
+```
+
+### GET /campaigns/metrics/total-campaigns/:organizationId
+**Description:** Get total campaigns count
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalCampaigns": 25
+  }
+}
+```
+
+### GET /campaigns/metrics/active-campaigns/:organizationId
+**Description:** Get active campaigns count
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "activeCampaigns": 8
+  }
+}
+```
+
+### GET /campaigns/metrics/emails-sent/:organizationId
+**Description:** Get total emails sent
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "emailsSent": 15000
+  }
+}
+```
+
+### GET /campaigns/metrics/open-rate/:organizationId
+**Description:** Get average open rate
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "openRate": 25.5
+  }
+}
+```
+
+### GET /campaigns/metrics/click-rate/:organizationId
+**Description:** Get average click rate
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "clickRate": 8.2
+  }
+}
+```
 
 ### GET /campaigns/track/open/:campaignId/:customerId
 **Description:** Track email open
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Open tracked successfully"
+}
+```
 
 ## 10. SUPPORT
 
 ### POST /support
-**Description:** Create support ticket
-**Body:** Support ticket object
+**Description:** Create a new support ticket
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "subject": "Payment Issue",
+  "description": "I'm having trouble with my payment",
+  "category": "billing",
+  "priority": "high",
+  "customer": {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "+1234567890"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "ticket_id",
+    "organizationId": "org_id",
+    "subject": "Payment Issue",
+    "description": "I'm having trouble with my payment",
+    "category": "billing",
+    "priority": "high",
+    "status": "open",
+    "customer": {
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "+1234567890"
+    },
+    "messages": [],
+    "hasUnreadMessages": false,
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
 ### GET /support
-**Description:** Get all tickets
-**Query:** organizationId
+**Description:** Get all support tickets
+**Query Parameters:**
+- `organizationId` (required): Organization ID
+- `status` (optional): Filter by status
+- `priority` (optional): Filter by priority
+- `category` (optional): Filter by category
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "ticket_id",
+      "subject": "Payment Issue",
+      "category": "billing",
+      "priority": "high",
+      "status": "open",
+      "customer": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "hasUnreadMessages": true,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalTickets": 50
+}
+```
 
 ### GET /support/:id
-**Description:** Get ticket by ID
-**Query:** organizationId
+**Description:** Get support ticket by ID
+**Query Parameters:**
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "ticket_id",
+    "organizationId": "org_id",
+    "subject": "Payment Issue",
+    "description": "I'm having trouble with my payment",
+    "category": "billing",
+    "priority": "high",
+    "status": "open",
+    "customer": {
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "+1234567890"
+    },
+    "messages": [
+      {
+        "sender": "customer",
+        "content": "I'm having trouble with my payment",
+        "readStatus": true,
+        "timestamp": "2024-01-01T00:00:00Z"
+      },
+      {
+        "sender": "support",
+        "content": "We're looking into this issue for you",
+        "readStatus": false,
+        "timestamp": "2024-01-01T12:00:00Z"
+      }
+    ],
+    "hasUnreadMessages": false,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
 ### PUT /support/:id
-**Description:** Update ticket
-**Body:** Ticket update object
+**Description:** Update support ticket
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "subject": "Updated Payment Issue",
+  "description": "Updated description",
+  "category": "technical",
+  "priority": "medium"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "ticket_id",
+    "subject": "Updated Payment Issue",
+    "description": "Updated description",
+    "category": "technical",
+    "priority": "medium",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
 ### POST /support/:id/message
-**Description:** Add message to ticket
-**Body:** `{"message": "string"}`
+**Description:** Add message to support ticket
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "sender": "support",
+  "content": "We're working on resolving your issue"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "ticket_id",
+    "messages": [
+      {
+        "sender": "support",
+        "content": "We're working on resolving your issue",
+        "readStatus": false,
+        "timestamp": "2024-01-01T12:00:00Z"
+      }
+    ],
+    "hasUnreadMessages": false,
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
 ### PATCH /support/:id/status
 **Description:** Change ticket status
-**Body:** `{"status": "string"}`
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "status": "resolved"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "ticket_id",
+    "status": "resolved",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
 
 ### DELETE /support/:id
-**Description:** Delete ticket
+**Description:** Delete support ticket
+**Body:**
+```json
+{
+  "organizationId": "org_id"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Ticket deleted"
+}
+```
 
-### Chat Integration:
-- POST /support/chat-integration
-- GET /support/chat-integration
-- PUT /support/chat-integration
-- DELETE /support/chat-integration
+### POST /support/chat-integration
+**Description:** Add chat integration
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "integration": {
+    "type": "intercom",
+    "apiKey": "intercom_api_key",
+    "widgetId": "widget_123"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "type": "intercom",
+      "apiKey": "intercom_api_key",
+      "widgetId": "widget_123"
+    }
+  ]
+}
+```
+
+### GET /support/chat-integration
+**Description:** Get chat integrations
+**Query Parameters:**
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "type": "intercom",
+      "apiKey": "intercom_api_key",
+      "widgetId": "widget_123"
+    }
+  ]
+}
+```
+
+### PUT /support/chat-integration
+**Description:** Update chat integration
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "integration": {
+    "type": "intercom",
+    "apiKey": "new_intercom_api_key",
+    "widgetId": "new_widget_123"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "type": "intercom",
+      "apiKey": "new_intercom_api_key",
+      "widgetId": "new_widget_123"
+    }
+  ]
+}
+```
+
+### DELETE /support/chat-integration
+**Description:** Delete chat integration
+**Body:**
+```json
+{
+  "organizationId": "org_id"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Chat integration deleted"
+}
+```
+
+### GET /support/metrics/total-tickets/:organizationId
+**Description:** Get total tickets count
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalTickets": 150
+  }
+}
+```
+
+### GET /support/metrics/open-tickets/:organizationId
+**Description:** Get open tickets count
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "openTickets": 25
+  }
+}
+```
+
+### GET /support/metrics/resolved-tickets/:organizationId
+**Description:** Get resolved tickets count
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "resolvedTickets": 125
+  }
+}
+```
+
+### GET /support/metrics/avg-response-time/:organizationId
+**Description:** Get average response time
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "avgResponseTime": "2.5 hours"
+  }
+}
+```
 
 ## 11. PAYMENTS
 
 ### POST /payments/initiate
 **Description:** Initiate a payment
-**Body:** Payment initiation object
-
-### POST /payments/upload-proof
-**Description:** Upload payment proof (bank transfer)
-**Body:** Form data with proof file
-
-### POST /payments/initiate-squad
-**Description:** Initiate Squad payment
-**Body:** Squad payment object
-
-## 12. ANALYTICS
-
-### Basic Analytics:
-- GET /analytics/total-revenue
-- GET /analytics/total-orders
-- GET /analytics/new-customers
-- GET /analytics/average-order-value
-- GET /analytics/return-rate
-- GET /analytics/lifetime-value
-- GET /analytics/customer-acquisition
-- GET /analytics/product-performance
-- GET /analytics/funnel-data
-- GET /analytics/retention-data
-- GET /analytics/regional-sales
-
-### Email Analytics:
-- GET /analytics/email/delivery-stats
-- GET /analytics/email/device-stats
-- GET /analytics/email/geo-stats
-
-### Advanced Analytics:
-- GET /advanced-analytics/sales/total-revenue
-- GET /advanced-analytics/sales/revenue-by-product
-- GET /advanced-analytics/sales/order-status-distribution
-- GET /advanced-analytics/customers/new-vs-returning
-- GET /advanced-analytics/customers/acquisition-sources
-- GET /advanced-analytics/products/best-sellers
-- GET /advanced-analytics/products/low-stock
-- GET /advanced-analytics/funnel/abandoned-cart-rate
-
-## 13. EMAIL MANAGEMENT
-
-### Emails:
-- POST /emails/create
-- GET /emails/all
-- GET /emails/get/:emailId
-- PATCH /emails/update/:emailId
-- DELETE /emails/delete/:emailId
-- GET /emails/status/:status
-- POST /emails/analytics/log
-
-### Email Templates:
-- POST /email/templates/create
-- GET /email/templates/all
-- GET /email/templates/get/:emailTemplateId
-- PATCH /email/templates/update/:emailTemplateId
-- DELETE /email/templates/delete/:emailTemplateId
-- GET /email/templates/organization/:organizationId
-
-### Senders:
-- POST /senders/create
-- GET /senders/user/:userId
-- GET /senders/organization/:organizationId
-- GET /senders/:senderId
-- PATCH /senders/update/:senderId
-- DELETE /senders/:senderId
-- PATCH /senders/reset-limit/:senderId
-
-### Receivers:
-- POST /receivers/create
-- GET /receivers/user/:userId
-- GET /receivers/:receiverId
-- PATCH /receivers/update/:receiverId
-- DELETE /receivers/delete/:receiverId
-- PATCH /receivers/:receiverId/deactivate
-
-### Inbox:
-- POST /inbox/create
-- GET /inbox/all
-- GET /inbox/get/:inboxEmailId
-- PATCH /inbox/update/:inboxEmailId
-- DELETE /inbox/delete/:inboxEmailId
-- GET /inbox/organization/:organizationId
-
-## 14. WEBSITE MANAGEMENT
-
-### Websites:
-- POST /websites/create
-- GET /websites/check-domain
-- GET /websites/organization/:organizationId
-- GET /websites/:id
-- DELETE /websites/delete/:id
-- PATCH /websites/basic-info/:id
-- PATCH /websites/business-info/:id
-- PATCH /websites/colors/:id
-- PATCH /websites/emails/:id
-- GET /websites/all/:userId
-- GET /websites/analytics/:userId
-- GET /websites/analytics/organization/:organizationId
-
-### Website Progress:
-- GET /website/progress/:websiteId
-- PATCH /website/progress/:websiteId/step
-- POST /website/progress/:websiteId/notes
-- PATCH /website/progress/:websiteId/notes/:noteId
-- POST /website/progress/:websiteId/assets
-- POST /website/progress/:websiteId/designers
-- POST /website/progress/:websiteId/milestones
-- PATCH /website/progress/:websiteId/milestones/:milestoneId
-- POST /website/progress/:websiteId/approvals
-- POST /website/progress/:websiteId/versions
-- POST /website/progress/:websiteId/feedback
-- PATCH /website/progress/:websiteId/feedback/:feedbackId
-- POST /website/progress/:websiteId/qa-checks
-
-### Templates:
-- POST /website/templates/create
-- GET /website/templates/all
-- GET /website/templates/get/:id
-- PATCH /website/templates/update/:id
-- DELETE /website/templates/delete/:id
-- GET /website/templates/user/:userId
-- GET /website/templates/analytics/all
-
-## 15. SUBSCRIPTIONS
-
-### Subscriptions:
-- POST /subscriptions
-- GET /subscriptions
-- GET /subscriptions/:id
-- PUT /subscriptions/:id
-- DELETE /subscriptions/:id
-- POST /subscriptions/assign
-- POST /subscriptions/:id/renew
-- POST /subscriptions/:id/cancel
-
-### Subscription Plans:
-- POST /plans
-- GET /plans
-- GET /plans/:id
-- PUT /plans/:id
-- DELETE /plans/:id
-
-## 16. MISCELLANEOUS
-
-### Stores:
-- POST /stores/create
-- GET /stores/organization/:organizationId
-- GET /stores/get/:storeId
-- PATCH /stores/update/:storeId
-- DELETE /stores/delete/:storeId
-- PATCH /stores/sync/:storeId
-
-### Products:
-- POST /products/create
-- GET /products/all
-- GET /products/get/:id
-- PATCH /products/update/:id
-- DELETE /products/delete/:id
-- POST /products/add-subscription
-
-### Call Scheduler:
-- POST /calls
-- GET /calls
-- GET /calls/:id
-- PUT /calls/:id
-- PATCH /calls/:id/cancel
-- DELETE /calls/:id
-
-### Exchange Rates:
-- POST /exchange-rates/set
-- GET /exchange-rates/:baseCurrency/:targetCurrency
-- GET /exchange-rates/all
-- DELETE /exchange-rates/exchange-rate/:baseCurrency/:targetCurrency
-- PATCH /exchange-rates/delete/:baseCurrency/:targetCurrency
-
-### Payment Gateway Keys:
-- GET /payment-gateways
-- GET /payment-gateways/:type
-- POST /payment-gateways
-- PUT /payment-gateways/:type
-- DELETE /payment-gateways/:type
-- GET /payment-gateways/:type/public-key
-
-### Chat Integrations:
-- POST /chat-integrations/create
-- GET /chat-integrations/all
-- GET /chat-integrations/get/:id
-- PUT /chat-integrations/update/:id
-- DELETE /chat-integrations/delete/:id
-
-### Draft/Trash/Archived:
-- Various CRUD operations for draft, trash, and archived items
-
-## AUTHENTICATION & AUTHORIZATION
-
-### JWT Token Format:
-```
-Authorization: Bearer <token>
-```
-
-### Token Expiration:
-- Default: 1 hour
-- Refresh mechanism: Re-login required
-
-### Role-Based Access:
-- **super-admin**: Full system access
-- **admin**: Organization-level access
-- **user**: Limited access within organization
-- **affiliate**: Affiliate-specific access
-
-### Organization Isolation:
-- Most endpoints require organizationId
-- Users can only access data within their organization
-- Super admins can access all organizations
-
-## ERROR RESPONSES
-
-### Standard Error Format:
+**Body:**
 ```json
 {
-  "success": false,
-  "message": "Error description"
+  "userId": "user_id",
+  "planId": "plan_id",
+  "gateway": "stripe",
+  "amount": 99.99,
+  "currency": "USD"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "reference": "uuid_reference",
+    "paymentId": "payment_id"
+  }
 }
 ```
 
-### Common HTTP Status Codes:
-- 200: Success
-- 201: Created
-- 400: Bad Request
-- 401: Unauthorized
-- 403: Forbidden
-- 404: Not Found
-- 500: Internal Server Error
+### POST /payments/upload-proof
+**Description:** Upload payment proof (bank transfer)
+**Body:**
+- `screenshot` (file): Payment proof image
 
-## FILE UPLOADS
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "url": "https://res.cloudinary.com/example/image/upload/payment_proofs/proof.jpg"
+  }
+}
+```
 
-### Supported Formats:
-- Images: JPG, PNG, GIF
-- Documents: PDF, DOC, DOCX
-- Maximum file size: 10MB
+### POST /payments/initiate-squad
+**Description:** Initiate Squad payment
+**Body:**
+```json
+{
+  "userId": "user_id",
+  "planId": "plan_id",
+  "amount": 50000,
+  "currency": "NGN",
+  "email": "user@example.com",
+  "name": "John Doe"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "checkout_url": "https://checkout.squadco.com/pay/transaction_ref",
+    "transaction_ref": "transaction_reference"
+  }
+}
+```
 
-### Upload Endpoints:
-- Profile pictures: `/users/:userId/profile-picture`
-- Organization logos: `/organization/logo/:organizationId`
-- Payment proofs: `/payments/upload-proof`
-- Website assets: `/website/progress/:websiteId/assets`
+## 12. ANALYTICS
 
-## RATE LIMITING
+### GET /analytics/total-revenue
+**Description:** Get total revenue
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+- `userId` (optional): User ID for currency conversion
+- `displayCurrency` (optional): Display currency
 
-### Current Limits:
-- No explicit rate limiting implemented
-- File uploads: 10MB max per file
-- Request body: 10MB max
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalRevenue": 125000.50,
+    "currency": "USD",
+    "currencyBreakdown": {
+      "USD": 80000.00,
+      "EUR": 45000.50
+    },
+    "timeRange": {
+      "start": "2024-01-01T00:00:00Z",
+      "end": "2024-01-31T23:59:59Z"
+    }
+  }
+}
+```
 
-## WEBHOOKS & INTEGRATIONS
+### GET /analytics/total-orders
+**Description:** Get total orders count
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
 
-### External Integrations:
-- WooCommerce store sync
-- Payment gateways (Squad, Flutterwave)
-- Email services
-- Chat integrations
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalOrders": 1250,
+    "timeRange": {
+      "start": "2024-01-01T00:00:00Z",
+      "end": "2024-01-31T23:59:59Z"
+    }
+  }
+}
+```
 
-### Sync Endpoints:
-- `/orders/sync/:storeId/:organizationId`
-- `/inventory/sync/:storeId/:organizationId`
-- `/customers/sync/:storeId/:organizationId`
-- `/stores/sync/:storeId`
+### GET /analytics/new-customers
+**Description:** Get new customers count
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
 
-## DEVELOPMENT NOTES
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "newCustomers": 250
+  }
+}
+```
 
-### Environment Variables Required:
-- MONGO_URL: MongoDB connection string
-- JWT_SECRET: JWT signing secret
-- CLOUDINARY_*: Cloudinary configuration
-- Payment gateway API keys
+### GET /analytics/average-order-value
+**Description:** Get average order value
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+- `userId` (optional): User ID for currency conversion
+- `displayCurrency` (optional): Display currency
 
-### Database Collections:
-- users
-- organizations
-- orders
-- inventory
-- customers
-- tasks
-- affiliates
-- campaigns
-- support
-- payments
-- emails
-- websites
-- subscriptions
-- And many more...
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "averageOrderValue": 100.00,
+    "currency": "USD",
+    "totalOrders": 1250
+  }
+}
+```
 
-### Frontend Integration Tips:
-1. Always include JWT token in Authorization header
-2. Handle organizationId in requests where required
-3. Implement proper error handling for all API calls
-4. Use appropriate HTTP methods (GET, POST, PATCH, DELETE)
-5. Handle file uploads with proper content-type headers
-6. Implement retry logic for failed requests
-7. Cache frequently accessed data
-8. Use pagination for large datasets
+### GET /analytics/return-rate
+**Description:** Get return rate
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
 
-## SUPPORT & CONTACT
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "returnRate": 5.2
+  }
+}
+```
 
-For API support and questions:
-- Check error responses for specific error messages
-- Verify authentication and authorization
-- Ensure proper request format and required fields
-- Contact development team for additional support
+### GET /analytics/lifetime-value
+**Description:** Get customer lifetime value
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+- `userId` (optional): User ID for currency conversion
+- `displayCurrency` (optional): Display currency
 
----
-*Last Updated: [Current Date]*
-*Version: 1.0* 
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "lifetimeValue": 450.00,
+    "currency": "USD"
+  }
+}
+```
+
+### GET /analytics/customer-acquisition
+**Description:** Get customer acquisition by source
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "acquisitionSources": [
+      {
+        "source": "organic",
+        "customers": 150,
+        "percentage": 60.0
+      },
+      {
+        "source": "paid",
+        "customers": 75,
+        "percentage": 30.0
+      },
+      {
+        "source": "referral",
+        "customers": 25,
+        "percentage": 10.0
+      }
+    ]
+  }
+}
+```
+
+### GET /analytics/product-performance
+**Description:** Get product performance
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "topProducts": [
+      {
+        "productId": "product_id",
+        "name": "Premium Widget",
+        "unitsSold": 500,
+        "revenue": 25000.00,
+        "currency": "USD"
+      }
+    ],
+    "lowStockProducts": [
+      {
+        "productId": "product_id",
+        "name": "Basic Widget",
+        "currentStock": 5,
+        "threshold": 10
+      }
+    ]
+  }
+}
+```
+
+### GET /analytics/funnel-data
+**Description:** Get sales funnel data
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "funnel": [
+      {
+        "stage": "visitors",
+        "count": 10000,
+        "conversionRate": 100.0
+      },
+      {
+        "stage": "add_to_cart",
+        "count": 2500,
+        "conversionRate": 25.0
+      },
+      {
+        "stage": "checkout",
+        "count": 1250,
+        "conversionRate": 12.5
+      },
+      {
+        "stage": "purchase",
+        "count": 1000,
+        "conversionRate": 10.0
+      }
+    ]
+  }
+}
+```
+
+### GET /analytics/retention-data
+**Description:** Get customer retention data
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "retentionRates": [
+      {
+        "period": "1 month",
+        "rate": 85.5
+      },
+      {
+        "period": "3 months",
+        "rate": 72.3
+      },
+      {
+        "period": "6 months",
+        "rate": 65.8
+      },
+      {
+        "period": "12 months",
+        "rate": 58.2
+      }
+    ]
+  }
+}
+```
+
+### GET /analytics/regional-sales
+**Description:** Get regional sales data
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "regionalSales": [
+      {
+        "region": "North America",
+        "sales": 75000.00,
+        "currency": "USD",
+        "percentage": 60.0
+      },
+      {
+        "region": "Europe",
+        "sales": 45000.00,
+        "currency": "USD",
+        "percentage": 36.0
+      },
+      {
+        "region": "Asia",
+        "sales": 5000.00,
+        "currency": "USD",
+        "percentage": 4.0
+      }
+    ]
+  }
+}
+```
+
+### GET /analytics/email/delivery-stats
+**Description:** Get email delivery statistics
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "deliveryStats": {
+      "sent": 15000,
+      "delivered": 14250,
+      "bounced": 750,
+      "deliveryRate": 95.0
+    }
+  }
+}
+```
+
+### GET /analytics/email/device-stats
+**Description:** Get email device statistics
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "deviceStats": [
+      {
+        "device": "mobile",
+        "opens": 3750,
+        "percentage": 50.0
+      },
+      {
+        "device": "desktop",
+        "opens": 3000,
+        "percentage": 40.0
+      },
+      {
+        "device": "tablet",
+        "opens": 750,
+        "percentage": 10.0
+      }
+    ]
+  }
+}
+```
+
+### GET /analytics/email/geo-stats
+**Description:** Get email geographic statistics
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "geoStats": [
+      {
+        "country": "United States",
+        "opens": 3000,
+        "percentage": 40.0
+      },
+      {
+        "country": "United Kingdom",
+        "opens": 1500,
+        "percentage": 20.0
+      },
+      {
+        "country": "Canada",
+        "opens": 750,
+        "percentage": 10.0
+      }
+    ]
+  }
+}
+```
+
+## 13. EMAIL MANAGEMENT
+
+### POST /emails/create
+**Description:** Create a new email
+**Body:**
+```json
+{
+  "recipient": "john@example.com",
+  "subject": "Welcome to our platform",
+  "body": "<html><body><h1>Welcome!</h1></body></html>",
+  "variables": {
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "emailTemplate": "template_id",
+  "createdBy": "user_id",
+  "organization": "org_id"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "email": {
+    "_id": "email_id",
+    "recipient": "john@example.com",
+    "subject": "Welcome to our platform",
+    "body": "<html><body><h1>Welcome!</h1></body></html>",
+    "variables": {
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "emailTemplate": "template_id",
+    "createdBy": "user_id",
+    "organization": "org_id",
+    "status": "draft",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /emails/all
+**Description:** Get all emails
+**Response:**
+```json
+{
+  "success": true,
+  "emails": [
+    {
+      "_id": "email_id",
+      "recipient": "john@example.com",
+      "subject": "Welcome to our platform",
+      "status": "sent",
+      "createdBy": {
+        "name": "Admin User",
+        "email": "admin@example.com"
+      },
+      "organization": {
+        "name": "My Company"
+      },
+      "emailTemplate": {
+        "emailTemplateName": "Welcome Template"
+      },
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /emails/get/:emailId
+**Description:** Get email by ID
+**Response:**
+```json
+{
+  "success": true,
+  "email": {
+    "_id": "email_id",
+    "recipient": "john@example.com",
+    "subject": "Welcome to our platform",
+    "body": "<html><body><h1>Welcome!</h1></body></html>",
+    "variables": {
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "emailTemplate": {
+      "emailTemplateName": "Welcome Template"
+    },
+    "status": "sent",
+    "bounceReason": null,
+    "unsubscribed": false,
+    "replied": false,
+    "sentAt": "2024-01-01T12:00:00Z",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### GET /emails/status/:status
+**Description:** Get emails by status
+**Path Parameters:**
+- `status`: inbox, sent, archived, trash, drafts, outbox, scheduled
+
+**Response:**
+```json
+{
+  "success": true,
+  "emails": [
+    {
+      "_id": "email_id",
+      "recipient": "john@example.com",
+      "subject": "Welcome to our platform",
+      "status": "sent",
+      "createdBy": {
+        "name": "Admin User",
+        "email": "admin@example.com"
+      },
+      "organization": {
+        "name": "My Company"
+      },
+      "emailTemplate": {
+        "emailTemplateName": "Welcome Template"
+      },
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### PATCH /emails/update/:emailId
+**Description:** Update email
+**Body:**
+```json
+{
+  "recipient": "updated@example.com",
+  "subject": "Updated Subject",
+  "body": "<html><body><h1>Updated Content</h1></body></html>",
+  "status": "sent",
+  "sentAt": "2024-01-01T12:00:00Z"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "email": {
+    "_id": "email_id",
+    "recipient": "updated@example.com",
+    "subject": "Updated Subject",
+    "body": "<html><body><h1>Updated Content</h1></body></html>",
+    "status": "sent",
+    "sentAt": "2024-01-01T12:00:00Z",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /emails/delete/:emailId
+**Description:** Delete email
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Email deleted successfully"
+}
+```
+
+### POST /emails/analytics/log
+**Description:** Log email analytics
+**Body:**
+```json
+{
+  "emailId": "email_id",
+  "status": "opened",
+  "deviceType": "mobile",
+  "client": "Gmail",
+  "country": "US"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "log": {
+    "_id": "log_id",
+    "emailId": "email_id",
+    "status": "opened",
+    "deviceType": "mobile",
+    "client": "Gmail",
+    "country": "US",
+    "sentAt": null,
+    "createdAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+## 14. WEBSITE MANAGEMENT
+
+### POST /websites/create
+**Description:** Create a new website
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "userId": "user_id",
+  "businessName": "My Business",
+  "businessType": "ecommerce",
+  "domain": "mybusiness",
+  "description": "An online store for my products",
+  "templateId": "template_id",
+  "needLogoDesign": true,
+  "logoDesignNotes": "Modern and professional look",
+  "logoDesignPreferences": {
+    "style": "Modern",
+    "colorScheme": ["#800020", "#0A2472"],
+    "includeIcon": true,
+    "includeText": true,
+    "inspirationLinks": ["https://example.com/inspiration"]
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "website_id",
+    "organization": "org_id",
+    "businessName": "My Business",
+    "businessType": "ecommerce",
+    "domain": "mybusiness",
+    "description": "An online store for my products",
+    "template": "template_id",
+    "owner": "user_id",
+    "status": "draft",
+    "primaryColor": "#800020",
+    "secondaryColor": "#0A2472",
+    "complementaryColor": "#e18d01",
+    "needLogoDesign": true,
+    "logoDesignNotes": "Modern and professional look",
+    "logoDesignPreferences": {
+      "style": "Modern",
+      "colorScheme": ["#800020", "#0A2472"],
+      "includeIcon": true,
+      "includeText": true,
+      "inspirationLinks": ["https://example.com/inspiration"]
+    },
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  "message": "Website created successfully"
+}
+```
+
+### GET /websites/check-domain
+**Description:** Check if domain is available
+**Query Parameters:**
+- `domain` (required): Domain name to check
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "domain": "mybusiness",
+    "available": true
+  }
+}
+```
+
+### GET /websites/organization/:organizationId
+**Description:** Get all websites for an organization
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "website_id",
+      "businessName": "My Business",
+      "domain": "mybusiness",
+      "status": "active",
+      "template": {
+        "name": "E-commerce Template"
+      },
+      "owner": {
+        "fullName": "John Doe",
+        "email": "john@example.com"
+      },
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /websites/:id
+**Description:** Get website by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "website_id",
+    "organization": {
+      "name": "My Company",
+      "organizationCode": "ORG123"
+    },
+    "businessName": "My Business",
+    "businessType": "ecommerce",
+    "domain": "mybusiness",
+    "description": "An online store for my products",
+    "template": {
+      "name": "E-commerce Template",
+      "category": "business"
+    },
+    "owner": {
+      "fullName": "John Doe",
+      "email": "john@example.com"
+    },
+    "status": "active",
+    "primaryColor": "#800020",
+    "secondaryColor": "#0A2472",
+    "complementaryColor": "#e18d01",
+    "logo": {
+      "url": "https://res.cloudinary.com/example/logo.jpg",
+      "publicId": "website_logos/logo_id",
+      "originalName": "logo.png"
+    },
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PATCH /websites/basic-info/:id
+**Description:** Update website basic information
+**Body:**
+```json
+{
+  "businessName": "Updated Business Name",
+  "businessType": "service",
+  "description": "Updated business description"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "website_id",
+    "businessName": "Updated Business Name",
+    "businessType": "service",
+    "description": "Updated business description",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### PATCH /websites/business-info/:id
+**Description:** Update website business information
+**Body:**
+```json
+{
+  "businessInfo": {
+    "address": "123 Business St",
+    "phone": "+1234567890",
+    "email": "contact@mybusiness.com",
+    "hours": "Mon-Fri 9AM-5PM"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "website_id",
+    "businessInfo": {
+      "address": "123 Business St",
+      "phone": "+1234567890",
+      "email": "contact@mybusiness.com",
+      "hours": "Mon-Fri 9AM-5PM"
+    },
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### PATCH /websites/colors/:id
+**Description:** Update website colors
+**Body:**
+```json
+{
+  "primaryColor": "#FF6B6B",
+  "secondaryColor": "#4ECDC4",
+  "complementaryColor": "#45B7D1"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "website_id",
+    "primaryColor": "#FF6B6B",
+    "secondaryColor": "#4ECDC4",
+    "complementaryColor": "#45B7D1",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### PATCH /websites/emails/:id
+**Description:** Update website email settings
+**Body:**
+```json
+{
+  "emailSettings": {
+    "contactEmail": "contact@mybusiness.com",
+    "supportEmail": "support@mybusiness.com",
+    "newsletterEmail": "newsletter@mybusiness.com"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "website_id",
+    "emailSettings": {
+      "contactEmail": "contact@mybusiness.com",
+      "supportEmail": "support@mybusiness.com",
+      "newsletterEmail": "newsletter@mybusiness.com"
+    },
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /websites/delete/:id
+**Description:** Delete website
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Website deleted successfully"
+}
+```
+
+### GET /websites/all/:userId
+**Description:** Get all websites (Super admin only)
+**Response:**
+```json
+{
+  "success": true,
+  "count": 50,
+  "data": [
+    {
+      "_id": "website_id",
+      "businessName": "My Business",
+      "domain": "mybusiness",
+      "status": "active",
+      "template": {
+        "name": "E-commerce Template"
+      },
+      "organization": {
+        "name": "My Company"
+      },
+      "owner": {
+        "fullName": "John Doe",
+        "email": "john@example.com"
+      },
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /websites/analytics/:userId
+**Description:** Get website analytics (Super admin only)
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalWebsites": 150,
+    "activeWebsites": 120,
+    "draftWebsites": 20,
+    "archivedWebsites": 10,
+    "recentWebsites": [
+      {
+        "businessName": "New Business",
+        "domain": "newbusiness",
+        "status": "active",
+        "createdAt": "2024-01-15T00:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+### GET /websites/analytics/organization/:organizationId
+**Description:** Get organization website analytics
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalWebsites": 5,
+    "activeWebsites": 4,
+    "draftWebsites": 1,
+    "recentWebsites": [
+      {
+        "businessName": "My Business",
+        "domain": "mybusiness",
+        "status": "active",
+        "createdAt": "2024-01-01T00:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+## 15. SUBSCRIPTIONS
+
+### POST /subscriptions
+**Description:** Create a new subscription
+**Body:**
+```json
+{
+  "user": "user_id",
+  "plan": "plan_id",
+  "billingInterval": "monthly",
+  "currency": "USD",
+  "startDate": "2024-01-01T00:00:00Z",
+  "endDate": "2024-02-01T00:00:00Z",
+  "status": "active"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "subscription_id",
+    "user": "user_id",
+    "plan": "plan_id",
+    "billingInterval": "monthly",
+    "currency": "USD",
+    "startDate": "2024-01-01T00:00:00Z",
+    "endDate": "2024-02-01T00:00:00Z",
+    "status": "active",
+    "isActive": true,
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /subscriptions
+**Description:** Get all subscriptions
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "subscription_id",
+      "user": {
+        "fullName": "John Doe",
+        "email": "john@example.com"
+      },
+      "plan": {
+        "name": "Pro Plan",
+        "price": 29.99
+      },
+      "billingInterval": "monthly",
+      "currency": "USD",
+      "status": "active",
+      "startDate": "2024-01-01T00:00:00Z",
+      "endDate": "2024-02-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /subscriptions/:id
+**Description:** Get subscription by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "subscription_id",
+    "user": {
+      "fullName": "John Doe",
+      "email": "john@example.com"
+    },
+    "plan": {
+      "name": "Pro Plan",
+      "price": 29.99,
+      "features": ["feature1", "feature2"]
+    },
+    "payment": {
+      "amount": 29.99,
+      "status": "completed"
+    },
+    "billingInterval": "monthly",
+    "currency": "USD",
+    "status": "active",
+    "startDate": "2024-01-01T00:00:00Z",
+    "endDate": "2024-02-01T00:00:00Z",
+    "isActive": true,
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PUT /subscriptions/:id
+**Description:** Update subscription
+**Body:**
+```json
+{
+  "billingInterval": "yearly",
+  "currency": "EUR",
+  "status": "active"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "subscription_id",
+    "billingInterval": "yearly",
+    "currency": "EUR",
+    "status": "active",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /subscriptions/:id
+**Description:** Delete subscription
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Subscription deleted"
+}
+```
+
+### POST /subscriptions/assign
+**Description:** Assign a plan to a user
+**Body:**
+```json
+{
+  "user": "user_id",
+  "plan": "plan_id",
+  "billingInterval": "monthly",
+  "currency": "USD",
+  "startDate": "2024-01-01T00:00:00Z",
+  "endDate": "2024-02-01T00:00:00Z"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "subscription_id",
+    "user": "user_id",
+    "plan": "plan_id",
+    "billingInterval": "monthly",
+    "currency": "USD",
+    "status": "active",
+    "startDate": "2024-01-01T00:00:00Z",
+    "endDate": "2024-02-01T00:00:00Z"
+  }
+}
+```
+
+### POST /subscriptions/:id/renew
+**Description:** Renew a subscription
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "subscription_id",
+    "endDate": "2024-03-01T00:00:00Z",
+    "status": "active",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### POST /subscriptions/:id/cancel
+**Description:** Cancel a subscription
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "subscription_id",
+    "status": "canceled",
+    "isActive": false,
+    "canceledAt": "2024-01-01T12:00:00Z",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+## 16. DASHBOARD OVERVIEW
+
+### GET /dashboard/overview/:organizationId
+**Description:** Get comprehensive dashboard overview
+**Query Parameters:**
+- `timeRange` (optional): Time range (7d, 30d, 90d, 12m, ytd)
+- `userId` (optional): User ID for currency conversion
+- `displayCurrency` (optional): Display currency
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "revenue": {
+      "current": 125000.50,
+      "previous": 100000.00,
+      "growth": 25.0,
+      "currency": "USD",
+      "currencyBreakdown": {
+        "USD": 80000.00,
+        "EUR": 45000.50
+      }
+    },
+    "orders": {
+      "current": 1250,
+      "previous": 1000,
+      "growth": 25.0
+    },
+    "customers": {
+      "current": 250,
+      "previous": 200,
+      "growth": 25.0
+    },
+    "inventory": {
+      "current": 500,
+      "previous": 400,
+      "growth": 25.0
+    },
+    "websites": {
+      "current": 5,
+      "previous": 4,
+      "growth": 25.0
+    },
+    "tasks": {
+      "current": 50,
+      "previous": 40,
+      "growth": 25.0
+    },
+    "campaigns": {
+      "current": 10,
+      "previous": 8,
+      "growth": 25.0
+    },
+    "supportTickets": {
+      "current": 25,
+      "previous": 20,
+      "growth": 25.0
+    },
+    "recentOrders": [
+      {
+        "_id": "order_id",
+        "orderNumber": "ORD-001",
+        "total": 299.99,
+        "currency": "USD",
+        "convertedTotal": 299.99,
+        "status": "completed",
+        "customer": {
+          "firstName": "John",
+          "lastName": "Doe",
+          "email": "john@example.com"
+        },
+        "date_created": "2024-01-15T00:00:00Z"
+      }
+    ],
+    "timeRange": {
+      "current": {
+        "start": "2024-01-01T00:00:00Z",
+        "end": "2024-01-31T23:59:59Z"
+      },
+      "previous": {
+        "start": "2023-12-02T00:00:00Z",
+        "end": "2024-01-01T00:00:00Z"
+      }
+    }
+  }
+}
+```
+
+### GET /dashboard/stats/:organizationId
+**Description:** Get basic dashboard stats (legacy)
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalRevenue": 125000.50,
+    "totalOrders": 1250,
+    "totalCustomers": 250,
+    "totalProducts": 500
+  }
+}
+```
+
+### GET /dashboard/sales-trend/:organizationId
+**Description:** Get sales trend data
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "salesTrend": [
+      {
+        "date": "2024-01-01",
+        "revenue": 5000.00,
+        "orders": 50
+      },
+      {
+        "date": "2024-01-02",
+        "revenue": 6000.00,
+        "orders": 60
+      }
+    ]
+  }
+}
+```
+
+### GET /dashboard/top-products/:organizationId
+**Description:** Get top performing products
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "topProducts": [
+      {
+        "productId": "product_id",
+        "name": "Premium Widget",
+        "unitsSold": 500,
+        "revenue": 25000.00,
+        "currency": "USD"
+      }
+    ]
+  }
+}
+```
+
+### GET /dashboard/customer-metrics/:organizationId
+**Description:** Get customer metrics
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalCustomers": 250,
+    "newCustomers": 50,
+    "returningCustomers": 200,
+    "averageOrderValue": 100.00,
+    "customerRetentionRate": 85.5
+  }
+}
+```
+
+### GET /dashboard/notifications/:organizationId
+**Description:** Get dashboard notifications
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "notifications": [
+      {
+        "id": "notification_id",
+        "type": "low_stock",
+        "message": "Product 'Basic Widget' is running low on stock",
+        "priority": "medium",
+        "createdAt": "2024-01-15T00:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+### GET /dashboard/recent-orders/:organizationId
+**Description:** Get recent orders
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "recentOrders": [
+      {
+        "_id": "order_id",
+        "orderNumber": "ORD-001",
+        "total": 299.99,
+        "currency": "USD",
+        "status": "completed",
+        "customer": {
+          "firstName": "John",
+          "lastName": "Doe",
+          "email": "john@example.com"
+        },
+        "date_created": "2024-01-15T00:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+## 17. USER PREFERENCES
+
+### GET /user-preferences
+**Description:** Get user preferences
+**Query Parameters:**
+- `userId` (required): User ID
+- `organizationId` (optional): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "displayCurrency": "USD",
+      "organization": {
+        "name": "My Company",
+        "defaultCurrency": "USD",
+        "analyticsCurrency": "USD"
+      }
+    },
+    "availableCurrencies": ["USD", "EUR", "GBP", "NGN", "CAD", "AUD"],
+    "organizationSettings": {
+      "defaultCurrency": "USD",
+      "analyticsCurrency": "USD"
+    }
+  }
+}
+```
+
+### PUT /user-preferences/display-currency
+**Description:** Update user display currency
+**Body:**
+```json
+{
+  "userId": "user_id",
+  "displayCurrency": "EUR"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "displayCurrency": "EUR"
+  }
+}
+```
+
+### PUT /user-preferences/analytics-currency
+**Description:** Update organization analytics currency
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "analyticsCurrency": "EUR"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "analyticsCurrency": "EUR",
+    "defaultCurrency": "USD",
+    "organizationName": "My Company"
+  }
+}
+```
+
+### GET /user-preferences/currency-conversion
+**Description:** Get currency conversion preview
+**Query Parameters:**
+- `organizationId` (required): Organization ID
+- `amount` (required): Amount to convert
+- `fromCurrency` (required): Source currency
+- `toCurrency` (required): Target currency
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "originalAmount": 100.00,
+    "originalCurrency": "USD",
+    "convertedAmount": 85.50,
+    "targetCurrency": "EUR",
+    "exchangeRate": 0.855
+  }
+}
+```
+
+### GET /user-preferences/currency-stats
+**Description:** Get currency statistics
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalCurrencies": 6,
+    "mostUsedCurrency": "USD",
+    "recentConversions": [
+      {
+        "from": "USD",
+        "to": "EUR",
+        "rate": 0.855,
+        "timestamp": "2024-01-15T00:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+### GET /user-preferences/available-currencies
+**Description:** Get available currencies
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "currencies": ["USD", "EUR", "GBP", "NGN", "CAD", "AUD"]
+  }
+}
+```
+
+## 18. EXCHANGE RATES
+
+### GET /exchange-rates
+**Description:** Get all exchange rates for an organization
+**Query Parameters:**
+- `organizationId` (required): Organization ID
+- `baseCurrency` (optional): Filter by base currency
+- `targetCurrency` (optional): Filter by target currency
+- `isActive` (optional): Filter by active status
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "rate_id",
+      "organizationId": "org_id",
+      "baseCurrency": "USD",
+      "targetCurrency": "EUR",
+      "rate": 0.855,
+      "isActive": true,
+      "isCustom": false,
+      "source": "api",
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /exchange-rates/convert
+**Description:** Convert currency
+**Query Parameters:**
+- `organizationId` (required): Organization ID
+- `amount` (required): Amount to convert
+- `fromCurrency` (required): Source currency
+- `toCurrency` (required): Target currency
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "originalAmount": 100.00,
+    "originalCurrency": "USD",
+    "convertedAmount": 85.50,
+    "targetCurrency": "EUR",
+    "exchangeRate": 0.855,
+    "rateSource": "api"
+  }
+}
+```
+
+### GET /exchange-rates/:id
+**Description:** Get a specific exchange rate
+**Query Parameters:**
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "rate_id",
+    "organizationId": "org_id",
+    "baseCurrency": "USD",
+    "targetCurrency": "EUR",
+    "rate": 0.855,
+    "isActive": true,
+    "isCustom": false,
+    "source": "api",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### POST /exchange-rates
+**Description:** Create a new exchange rate
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "baseCurrency": "USD",
+  "targetCurrency": "EUR",
+  "rate": 0.855,
+  "isCustom": false,
+  "source": "user"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "rate_id",
+    "organizationId": "org_id",
+    "baseCurrency": "USD",
+    "targetCurrency": "EUR",
+    "rate": 0.855,
+    "isActive": true,
+    "isCustom": false,
+    "source": "user",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### POST /exchange-rates/bulk
+**Description:** Bulk create exchange rates
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "rates": [
+    {
+      "baseCurrency": "USD",
+      "targetCurrency": "EUR",
+      "rate": 0.855
+    },
+    {
+      "baseCurrency": "USD",
+      "targetCurrency": "GBP",
+      "rate": 0.750
+    }
+  ]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "created": 2,
+    "rates": [
+      {
+        "_id": "rate_id_1",
+        "baseCurrency": "USD",
+        "targetCurrency": "EUR",
+        "rate": 0.855
+      },
+      {
+        "_id": "rate_id_2",
+        "baseCurrency": "USD",
+        "targetCurrency": "GBP",
+        "rate": 0.750
+      }
+    ]
+  }
+}
+```
+
+### PUT /exchange-rates/:id
+**Description:** Update an exchange rate
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "rate": 0.860,
+  "isActive": true
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "rate_id",
+    "rate": 0.860,
+    "isActive": true,
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /exchange-rates/:id
+**Description:** Delete an exchange rate
+**Query Parameters:**
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Exchange rate deleted successfully"
+}
+```
+
+## 19. CALL SCHEDULER
+
+### POST /call-scheduler
+**Description:** Create a new call
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "userId": "user_id",
+  "title": "Client Meeting",
+  "description": "Discuss project requirements",
+  "startTime": "2024-01-15T10:00:00Z",
+  "endTime": "2024-01-15T11:00:00Z",
+  "attendees": [
+    {
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "+1234567890"
+    }
+  ],
+  "meetingLink": "https://meet.google.com/abc-defg-hij",
+  "status": "scheduled",
+  "reminderTime": "2024-01-15T09:45:00Z"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "call_id",
+    "organizationId": "org_id",
+    "userId": "user_id",
+    "title": "Client Meeting",
+    "description": "Discuss project requirements",
+    "startTime": "2024-01-15T10:00:00Z",
+    "endTime": "2024-01-15T11:00:00Z",
+    "attendees": [
+      {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "phone": "+1234567890"
+      }
+    ],
+    "meetingLink": "https://meet.google.com/abc-defg-hij",
+    "status": "scheduled",
+    "reminderTime": "2024-01-15T09:45:00Z",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /call-scheduler
+**Description:** Get all calls for an organization
+**Query Parameters:**
+- `organizationId` (required): Organization ID
+- `userId` (optional): Filter by user ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "call_id",
+      "title": "Client Meeting",
+      "description": "Discuss project requirements",
+      "startTime": "2024-01-15T10:00:00Z",
+      "endTime": "2024-01-15T11:00:00Z",
+      "attendees": [
+        {
+          "name": "John Doe",
+          "email": "john@example.com"
+        }
+      ],
+      "meetingLink": "https://meet.google.com/abc-defg-hij",
+      "status": "scheduled",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /call-scheduler/:id
+**Description:** Get a single call by ID
+**Query Parameters:**
+- `organizationId` (required): Organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "call_id",
+    "organizationId": "org_id",
+    "userId": "user_id",
+    "title": "Client Meeting",
+    "description": "Discuss project requirements",
+    "startTime": "2024-01-15T10:00:00Z",
+    "endTime": "2024-01-15T11:00:00Z",
+    "attendees": [
+      {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "phone": "+1234567890"
+      }
+    ],
+    "meetingLink": "https://meet.google.com/abc-defg-hij",
+    "status": "scheduled",
+    "reminderTime": "2024-01-15T09:45:00Z",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PUT /call-scheduler/:id
+**Description:** Update a call
+**Body:**
+```json
+{
+  "organizationId": "org_id",
+  "title": "Updated Client Meeting",
+  "description": "Updated project discussion",
+  "startTime": "2024-01-15T11:00:00Z",
+  "endTime": "2024-01-15T12:00:00Z",
+  "status": "rescheduled"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "call_id",
+    "title": "Updated Client Meeting",
+    "description": "Updated project discussion",
+    "startTime": "2024-01-15T11:00:00Z",
+    "endTime": "2024-01-15T12:00:00Z",
+    "status": "rescheduled",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### PATCH /call-scheduler/:id/cancel
+**Description:** Cancel a call
+**Body:**
+```json
+{
+  "organizationId": "org_id"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "call_id",
+    "status": "cancelled",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /call-scheduler/:id
+**Description:** Delete a call
+**Body:**
+```json
+{
+  "organizationId": "org_id"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Call deleted"
+}
+```
+
+## 20. PAYMENT GATEWAYS
+
+### GET /payment-gateways
+**Description:** Get all payment gateway keys
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "gateway_id",
+      "type": "stripe",
+      "name": "Stripe",
+      "description": "Stripe payment gateway",
+      "logoUrl": "https://example.com/stripe-logo.png",
+      "publicKey": "pk_test_...",
+      "secretKey": "sk_test_...",
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /payment-gateways/:type
+**Description:** Get payment gateway key by type
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "gateway_id",
+    "type": "stripe",
+    "name": "Stripe",
+    "description": "Stripe payment gateway",
+    "logoUrl": "https://example.com/stripe-logo.png",
+    "publicKey": "pk_test_...",
+    "secretKey": "sk_test_...",
+    "isActive": true,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### POST /payment-gateways
+**Description:** Create a new payment gateway key
+**Body:**
+```json
+{
+  "type": "stripe",
+  "name": "Stripe",
+  "description": "Stripe payment gateway",
+  "logoUrl": "https://example.com/stripe-logo.png",
+  "publicKey": "pk_test_...",
+  "secretKey": "sk_test_...",
+  "isActive": true
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "gateway_id",
+    "type": "stripe",
+    "name": "Stripe",
+    "description": "Stripe payment gateway",
+    "logoUrl": "https://example.com/stripe-logo.png",
+    "publicKey": "pk_test_...",
+    "secretKey": "sk_test_...",
+    "isActive": true,
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PUT /payment-gateways/:type
+**Description:** Update payment gateway key
+**Body:**
+```json
+{
+  "publicKey": "pk_live_...",
+  "secretKey": "sk_live_...",
+  "isActive": true
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "gateway_id",
+    "publicKey": "pk_live_...",
+    "secretKey": "sk_live_...",
+    "isActive": true,
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /payment-gateways/:type
+**Description:** Delete payment gateway key
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Key deleted"
+}
+```
+
+### GET /payment-gateways/:type/public-key
+**Description:** Get public key for a payment gateway
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "publicKey": "pk_test_..."
+  }
+}
+```
+
+## 21. CHAT INTEGRATIONS
+
+### POST /chat-integrations/create
+**Description:** Create a new chat integration
+**Body:**
+```json
+{
+  "name": "Intercom Integration",
+  "type": "intercom",
+  "apiKey": "intercom_api_key",
+  "widgetId": "widget_123",
+  "organizationId": "org_id",
+  "isActive": true,
+  "settings": {
+    "autoReply": true,
+    "workingHours": "9AM-5PM",
+    "timezone": "UTC"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "integration_id",
+    "name": "Intercom Integration",
+    "type": "intercom",
+    "apiKey": "intercom_api_key",
+    "widgetId": "widget_123",
+    "organizationId": "org_id",
+    "isActive": true,
+    "settings": {
+      "autoReply": true,
+      "workingHours": "9AM-5PM",
+      "timezone": "UTC"
+    },
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /chat-integrations/all
+**Description:** Get all chat integrations
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "integration_id",
+      "name": "Intercom Integration",
+      "type": "intercom",
+      "isActive": true,
+      "organizationId": "org_id",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /chat-integrations/get/:id
+**Description:** Get chat integration by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "integration_id",
+    "name": "Intercom Integration",
+    "type": "intercom",
+    "apiKey": "intercom_api_key",
+    "widgetId": "widget_123",
+    "organizationId": "org_id",
+    "isActive": true,
+    "settings": {
+      "autoReply": true,
+      "workingHours": "9AM-5PM",
+      "timezone": "UTC"
+    },
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PUT /chat-integrations/update/:id
+**Description:** Update chat integration
+**Body:**
+```json
+{
+  "name": "Updated Intercom Integration",
+  "apiKey": "new_intercom_api_key",
+  "isActive": false,
+  "settings": {
+    "autoReply": false,
+    "workingHours": "10AM-6PM",
+    "timezone": "EST"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "integration_id",
+    "name": "Updated Intercom Integration",
+    "apiKey": "new_intercom_api_key",
+    "isActive": false,
+    "settings": {
+      "autoReply": false,
+      "workingHours": "10AM-6PM",
+      "timezone": "EST"
+    },
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /chat-integrations/delete/:id
+**Description:** Delete chat integration
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Deleted"
+}
+```
+
+## 22. TEMPLATES
+
+### POST /templates/create
+**Description:** Create a new template
+**Body:**
+```json
+{
+  "name": "E-commerce Template",
+  "description": "A modern e-commerce website template",
+  "category": "business",
+  "isPremium": true,
+  "price": 99.99,
+  "features": ["responsive", "seo-friendly", "mobile-optimized"]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "template_id",
+    "userId": "user_id",
+    "name": "E-commerce Template",
+    "description": "A modern e-commerce website template",
+    "category": "business",
+    "isPremium": true,
+    "price": 99.99,
+    "features": ["responsive", "seo-friendly", "mobile-optimized"],
+    "image": {
+      "url": "https://res.cloudinary.com/example/template_images/template.jpg",
+      "publicId": "template_images/template_id"
+    },
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  "message": "Template created successfully"
+}
+```
+
+### GET /templates/all
+**Description:** Get all templates
+**Query Parameters:**
+- `category` (optional): Filter by category
+- `isPremium` (optional): Filter by premium status
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 25,
+  "data": [
+    {
+      "_id": "template_id",
+      "name": "E-commerce Template",
+      "description": "A modern e-commerce website template",
+      "category": "business",
+      "isPremium": true,
+      "price": 99.99,
+      "features": ["responsive", "seo-friendly", "mobile-optimized"],
+      "image": {
+        "url": "https://res.cloudinary.com/example/template_images/template.jpg"
+      },
+      "userId": {
+        "name": "Template Creator",
+        "email": "creator@example.com"
+      },
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /templates/get/:id
+**Description:** Get template by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "template_id",
+    "userId": {
+      "name": "Template Creator",
+      "email": "creator@example.com"
+    },
+    "name": "E-commerce Template",
+    "description": "A modern e-commerce website template",
+    "category": "business",
+    "isPremium": true,
+    "price": 99.99,
+    "features": ["responsive", "seo-friendly", "mobile-optimized"],
+    "image": {
+      "url": "https://res.cloudinary.com/example/template_images/template.jpg",
+      "publicId": "template_images/template_id"
+    },
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PATCH /templates/update/:id
+**Description:** Update template
+**Body:**
+```json
+{
+  "name": "Updated E-commerce Template",
+  "description": "Updated description",
+  "price": 149.99,
+  "features": ["responsive", "seo-friendly", "mobile-optimized", "analytics"]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "template_id",
+    "name": "Updated E-commerce Template",
+    "description": "Updated description",
+    "price": 149.99,
+    "features": ["responsive", "seo-friendly", "mobile-optimized", "analytics"],
+    "updatedAt": "2024-01-01T12:00:00Z"
+  },
+  "message": "Template updated successfully"
+}
+```
+
+### DELETE /templates/delete/:id
+**Description:** Delete template
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Template deleted successfully"
+}
+```
+
+### GET /templates/user/:userId
+**Description:** Get user-specific templates
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "template_id",
+      "name": "My Custom Template",
+      "description": "A custom template I created",
+      "category": "personal",
+      "isPremium": false,
+      "price": 0,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /templates/analytics/all
+**Description:** Get template analytics (admin only)
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalTemplates": 150,
+    "premiumTemplates": 50,
+    "freeTemplates": 100,
+    "totalRevenue": 5000.00,
+    "mostPopularCategory": "business",
+    "recentTemplates": [
+      {
+        "name": "New Template",
+        "category": "business",
+        "createdAt": "2024-01-15T00:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+## 23. DRAFT/TRASH/ARCHIVE MANAGEMENT
+
+### POST /drafts
+**Description:** Create a new draft
+**Body:**
+```json
+{
+  "sender": "sender@example.com",
+  "subject": "Draft Email Subject",
+  "body": "<html><body><h1>Draft Content</h1></body></html>",
+  "recipients": ["recipient1@example.com", "recipient2@example.com"],
+  "cc": ["cc@example.com"],
+  "bcc": ["bcc@example.com"],
+  "attachments": [
+    {
+      "name": "document.pdf",
+      "url": "https://example.com/document.pdf"
+    }
+  ],
+  "organization": "org_id",
+  "user": "user_id"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "draft": {
+    "_id": "draft_id",
+    "sender": "sender@example.com",
+    "subject": "Draft Email Subject",
+    "body": "<html><body><h1>Draft Content</h1></body></html>",
+    "recipients": ["recipient1@example.com", "recipient2@example.com"],
+    "cc": ["cc@example.com"],
+    "bcc": ["bcc@example.com"],
+    "attachments": [
+      {
+        "name": "document.pdf",
+        "url": "https://example.com/document.pdf"
+      }
+    ],
+    "organization": "org_id",
+    "user": "user_id",
+    "lastSavedAt": "2024-01-01T00:00:00Z",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /drafts
+**Description:** Get all drafts
+**Response:**
+```json
+{
+  "success": true,
+  "drafts": [
+    {
+      "_id": "draft_id",
+      "sender": "sender@example.com",
+      "subject": "Draft Email Subject",
+      "recipients": ["recipient1@example.com"],
+      "organization": {
+        "name": "My Company"
+      },
+      "user": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "lastSavedAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /drafts/:draftId
+**Description:** Get a single draft
+**Response:**
+```json
+{
+  "success": true,
+  "draft": {
+    "_id": "draft_id",
+    "sender": "sender@example.com",
+    "subject": "Draft Email Subject",
+    "body": "<html><body><h1>Draft Content</h1></body></html>",
+    "recipients": ["recipient1@example.com", "recipient2@example.com"],
+    "cc": ["cc@example.com"],
+    "bcc": ["bcc@example.com"],
+    "attachments": [
+      {
+        "name": "document.pdf",
+        "url": "https://example.com/document.pdf"
+      }
+    ],
+    "organization": {
+      "name": "My Company"
+    },
+    "user": {
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "lastSavedAt": "2024-01-01T00:00:00Z",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PUT /drafts/:draftId
+**Description:** Update a draft
+**Body:**
+```json
+{
+  "subject": "Updated Draft Subject",
+  "body": "<html><body><h1>Updated Draft Content</h1></body></html>",
+  "recipients": ["updated@example.com"]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "draft": {
+    "_id": "draft_id",
+    "subject": "Updated Draft Subject",
+    "body": "<html><body><h1>Updated Draft Content</h1></body></html>",
+    "recipients": ["updated@example.com"],
+    "lastSavedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /drafts/:draftId
+**Description:** Delete a draft
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Draft deleted successfully"
+}
+```
+
+### POST /drafts/:draftId/send
+**Description:** Send draft as email
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Draft sent successfully",
+  "email": {
+    "_id": "email_id",
+    "subject": "Draft Email Subject",
+    "status": "sent",
+    "sentAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### POST /trash/move
+**Description:** Move email to trash
+**Body:**
+```json
+{
+  "emailId": "email_id",
+  "originalFolder": "inbox"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Email moved to trash"
+}
+```
+
+### GET /trash
+**Description:** Get all trash emails
+**Response:**
+```json
+{
+  "success": true,
+  "trashEmails": [
+    {
+      "_id": "trash_id",
+      "sender": "sender@example.com",
+      "subject": "Trashed Email Subject",
+      "originalFolder": "inbox",
+      "organization": {
+        "name": "My Company"
+      },
+      "user": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "deletedAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### POST /trash/restore/:trashId
+**Description:** Restore email from trash
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Email restored successfully"
+}
+```
+
+### DELETE /trash/:trashId
+**Description:** Permanently delete from trash
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Email permanently deleted"
+}
+```
+
+## 24. AFFILIATE MARKETING MATERIALS
+
+### GET /affiliates/:affiliateId/materials
+**Description:** Get marketing materials for an affiliate
+**Query Parameters:**
+- `type` (optional): Filter by material type
+- `status` (optional): Filter by status
+- `category` (optional): Filter by category
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "material_id",
+      "affiliateId": "affiliate_id",
+      "title": "Product Banner",
+      "type": "banner",
+      "url": "https://example.com/banner.jpg",
+      "description": "High-quality product banner",
+      "category": "social_media",
+      "tags": ["banner", "product", "social"],
+      "status": "active",
+      "usage": {
+        "views": 1500,
+        "clicks": 250,
+        "conversions": 25
+      },
+      "createdBy": {
+        "fullName": "Sarah Johnson",
+        "email": "sarah@example.com"
+      },
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "currentPage": 1,
+  "totalPages": 5,
+  "totalMaterials": 50
+}
+```
+
+### POST /affiliates/:affiliateId/materials
+**Description:** Create marketing material for an affiliate
+**Body:**
+```json
+{
+  "title": "Product Banner",
+  "type": "banner",
+  "url": "https://example.com/banner.jpg",
+  "description": "High-quality product banner",
+  "category": "social_media",
+  "tags": ["banner", "product", "social"],
+  "metadata": {
+    "dimensions": "1200x630",
+    "format": "jpg",
+    "size": "150KB"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "material_id",
+    "affiliateId": "affiliate_id",
+    "title": "Product Banner",
+    "type": "banner",
+    "url": "https://example.com/banner.jpg",
+    "description": "High-quality product banner",
+    "category": "social_media",
+    "tags": ["banner", "product", "social"],
+    "metadata": {
+      "dimensions": "1200x630",
+      "format": "jpg",
+      "size": "150KB"
+    },
+    "status": "active",
+    "usage": {
+      "views": 0,
+      "clicks": 0,
+      "conversions": 0
+    },
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /affiliates/:affiliateId/materials/:id
+**Description:** Get marketing material by ID
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "material_id",
+    "affiliateId": "affiliate_id",
+    "title": "Product Banner",
+    "type": "banner",
+    "url": "https://example.com/banner.jpg",
+    "description": "High-quality product banner",
+    "category": "social_media",
+    "tags": ["banner", "product", "social"],
+    "metadata": {
+      "dimensions": "1200x630",
+      "format": "jpg",
+      "size": "150KB"
+    },
+    "status": "active",
+    "usage": {
+      "views": 1500,
+      "clicks": 250,
+      "conversions": 25
+    },
+    "createdBy": {
+      "fullName": "Sarah Johnson",
+      "email": "sarah@example.com"
+    },
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PATCH /affiliates/:affiliateId/materials/:id
+**Description:** Update marketing material
+**Body:**
+```json
+{
+  "title": "Updated Product Banner",
+  "description": "Updated banner description",
+  "tags": ["banner", "product", "social", "updated"],
+  "status": "active"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "material_id",
+    "title": "Updated Product Banner",
+    "description": "Updated banner description",
+    "tags": ["banner", "product", "social", "updated"],
+    "status": "active",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /affiliates/:affiliateId/materials/:id
+**Description:** Delete marketing material
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Marketing material deleted successfully"
+}
+```
+
+### POST /affiliates/materials/:id/track-view
+**Description:** Track material view
+**Response:**
+```json
+{
+  "success": true,
+  "message": "View tracked successfully"
+}
+```
+
+### POST /affiliates/materials/:id/track-click
+**Description:** Track material click
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Click tracked successfully"
+}
+```
+
+### POST /affiliates/materials/:id/track-conversion
+**Description:** Track material conversion
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Conversion tracked successfully"
+}
+```
+
+### GET /affiliates/materials/:id/stats
+**Description:** Get material statistics
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "views": 1500,
+    "clicks": 250,
+    "conversions": 25,
+    "clickThroughRate": 16.67,
+    "conversionRate": 10.0
+  }
+}
+```
+
+### GET /affiliates/dashboard/materials
+**Description:** Get affiliate's own materials
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "material_id",
+      "title": "My Product Banner",
+      "type": "banner",
+      "url": "https://example.com/my-banner.jpg",
+      "status": "active",
+      "usage": {
+        "views": 500,
+        "clicks": 75,
+        "conversions": 8
+      },
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### POST /affiliates/materials
+**Description:** Create affiliate's own material
+**Body:**
+```json
+{
+  "title": "My Custom Banner",
+  "type": "banner",
+  "url": "https://example.com/my-banner.jpg",
+  "description": "My custom banner for social media",
+  "category": "social_media",
+  "tags": ["custom", "banner", "social"]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "material_id",
+    "title": "My Custom Banner",
+    "type": "banner",
+    "url": "https://example.com/my-banner.jpg",
+    "description": "My custom banner for social media",
+    "category": "social_media",
+    "tags": ["custom", "banner", "social"],
+    "status": "active",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PATCH /affiliates/materials/:id
+**Description:** Update affiliate's own material
+**Body:**
+```json
+{
+  "title": "Updated Custom Banner",
+  "description": "Updated description",
+  "status": "inactive"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "material_id",
+    "title": "Updated Custom Banner",
+    "description": "Updated description",
+    "status": "inactive",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /affiliates/materials/:id
+**Description:** Delete affiliate's own material
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Material deleted successfully"
+}
+```
+
+## 25. STORE MANAGEMENT
+
+### POST /stores/create
+**Description:** Create a new store
+**Body:**
+```json
+{
+  "name": "My Online Store",
+  "organizationId": "org_id",
+  "userId": "user_id",
+  "description": "An e-commerce store for electronics",
+  "platformType": "woocommerce",
+  "url": "https://mystore.com",
+  "apiKey": "wc_api_key_123",
+  "secretKey": "wc_secret_key_456"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Store created successfully",
+  "store": {
+    "_id": "store_id",
+    "name": "My Online Store",
+    "organizationId": "org_id",
+    "userId": "user_id",
+    "description": "An e-commerce store for electronics",
+    "platformType": "woocommerce",
+    "url": "https://mystore.com",
+    "apiKey": "wc_api_key_123",
+    "secretKey": "wc_secret_key_456",
+    "websiteLogo": "https://res.cloudinary.com/example/website_logos/logo.jpg",
+    "isActive": true,
+    "lastSyncDate": null,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /stores/organization/:organizationId
+**Description:** Get all stores for an organization
+**Response:**
+```json
+{
+  "success": true,
+  "stores": [
+    {
+      "_id": "store_id",
+      "name": "My Online Store",
+      "description": "An e-commerce store for electronics",
+      "platformType": "woocommerce",
+      "url": "https://mystore.com",
+      "isActive": true,
+      "lastSyncDate": "2024-01-15T00:00:00Z",
+      "userId": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /stores/get/:storeId
+**Description:** Get a specific store by ID
+**Response:**
+```json
+{
+  "success": true,
+  "store": {
+    "_id": "store_id",
+    "name": "My Online Store",
+    "organizationId": {
+      "name": "My Company",
+      "email": "contact@mycompany.com"
+    },
+    "userId": {
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "description": "An e-commerce store for electronics",
+    "platformType": "woocommerce",
+    "url": "https://mystore.com",
+    "apiKey": "wc_api_key_123",
+    "secretKey": "wc_secret_key_456",
+    "websiteLogo": "https://res.cloudinary.com/example/website_logos/logo.jpg",
+    "isActive": true,
+    "lastSyncDate": "2024-01-15T00:00:00Z",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PATCH /stores/update/:storeId
+**Description:** Update a store
+**Body:**
+```json
+{
+  "name": "Updated Store Name",
+  "description": "Updated store description",
+  "platformType": "shopify",
+  "url": "https://updatedstore.com",
+  "apiKey": "new_api_key",
+  "secretKey": "new_secret_key",
+  "isActive": false
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Store updated successfully",
+  "store": {
+    "_id": "store_id",
+    "name": "Updated Store Name",
+    "description": "Updated store description",
+    "platformType": "shopify",
+    "url": "https://updatedstore.com",
+    "apiKey": "new_api_key",
+    "secretKey": "new_secret_key",
+    "isActive": false,
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /stores/delete/:storeId
+**Description:** Delete a store
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Store deleted successfully",
+  "store": {
+    "_id": "store_id",
+    "name": "My Online Store",
+    "description": "An e-commerce store for electronics",
+    "platformType": "woocommerce",
+    "url": "https://mystore.com"
+  }
+}
+```
+
+### PATCH /stores/sync/:storeId
+**Description:** Sync store with WooCommerce
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Store synced with WooCommerce",
+  "store": {
+    "_id": "store_id",
+    "name": "My Online Store",
+    "lastSyncDate": "2024-01-15T12:00:00Z",
+    "updatedAt": "2024-01-15T12:00:00Z"
+  }
+}
+```
+
+### GET /stores/user/:userId
+**Description:** Get all stores for a specific user
+**Response:**
+```json
+{
+  "success": true,
+  "stores": [
+    {
+      "_id": "store_id",
+      "name": "My Online Store",
+      "description": "An e-commerce store for electronics",
+      "platformType": "woocommerce",
+      "url": "https://mystore.com",
+      "isActive": true,
+      "lastSyncDate": "2024-01-15T00:00:00Z",
+      "organizationId": {
+        "name": "My Company"
+      },
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /stores/all
+**Description:** Get all stores (admin only)
+**Response:**
+```json
+{
+  "success": true,
+  "stores": [
+    {
+      "_id": "store_id",
+      "name": "My Online Store",
+      "description": "An e-commerce store for electronics",
+      "platformType": "woocommerce",
+      "url": "https://mystore.com",
+      "isActive": true,
+      "lastSyncDate": "2024-01-15T00:00:00Z",
+      "organizationId": {
+        "name": "My Company",
+        "email": "contact@mycompany.com"
+      },
+      "userId": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+## 26. WOOCOMMERCE WEBHOOKS
+
+### POST /webhooks/woocommerce/order-created
+**Description:** Handle WooCommerce order created webhook
+**Headers:**
+- `X-WC-Webhook-Signature`: HMAC-SHA256 signature for verification
+- `X-WC-Webhook-Topic`: order.created
+- `X-WC-Webhook-Resource`: order
+- `X-WC-Webhook-Event`: created
+- `X-WC-Webhook-ID`: Webhook ID
+- `X-WC-Webhook-Delivery-ID`: Delivery ID
+
+**Body:** WooCommerce order data
+```json
+{
+  "id": 123,
+  "number": "123",
+  "status": "pending",
+  "currency": "USD",
+  "date_created": "2024-01-15T10:00:00",
+  "total": "99.99",
+  "customer_id": 456,
+  "billing": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com"
+  },
+  "line_items": [
+    {
+      "product_id": 789,
+      "name": "Product Name",
+      "quantity": 2,
+      "price": "49.99"
+    }
+  ]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "order created processed successfully"
+}
+```
+
+### POST /webhooks/woocommerce/order-updated
+**Description:** Handle WooCommerce order updated webhook
+**Headers:** Same as order-created
+**Body:** WooCommerce order data
+**Response:**
+```json
+{
+  "success": true,
+  "message": "order updated processed successfully"
+}
+```
+
+### POST /webhooks/woocommerce/order-deleted
+**Description:** Handle WooCommerce order deleted webhook
+**Headers:** Same as order-created
+**Body:** WooCommerce order data
+**Response:**
+```json
+{
+  "success": true,
+  "message": "order deleted processed successfully"
+}
+```
+
+### POST /webhooks/woocommerce/customer-created
+**Description:** Handle WooCommerce customer created webhook
+**Headers:** Same as order-created (but for customer resource)
+**Body:** WooCommerce customer data
+```json
+{
+  "id": 456,
+  "email": "john@example.com",
+  "first_name": "John",
+  "last_name": "Doe",
+  "date_created": "2024-01-15T10:00:00",
+  "billing": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com"
+  }
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "customer created processed successfully"
+}
+```
+
+### POST /webhooks/woocommerce/customer-updated
+**Description:** Handle WooCommerce customer updated webhook
+**Headers:** Same as customer-created
+**Body:** WooCommerce customer data
+**Response:**
+```json
+{
+  "success": true,
+  "message": "customer updated processed successfully"
+}
+```
+
+### POST /webhooks/woocommerce/customer-deleted
+**Description:** Handle WooCommerce customer deleted webhook
+**Headers:** Same as customer-created
+**Body:** WooCommerce customer data
+**Response:**
+```json
+{
+  "success": true,
+  "message": "customer deleted processed successfully"
+}
+```
+
+### POST /webhooks/woocommerce/product-created
+**Description:** Handle WooCommerce product created webhook
+**Headers:** Same as order-created (but for product resource)
+**Body:** WooCommerce product data
+```json
+{
+  "id": 789,
+  "name": "Product Name",
+  "sku": "PROD-001",
+  "price": "49.99",
+  "regular_price": "59.99",
+  "sale_price": "49.99",
+  "status": "publish",
+  "stock_quantity": 100,
+  "stock_status": "instock",
+  "date_created": "2024-01-15T10:00:00"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "product created processed successfully"
+}
+```
+
+### POST /webhooks/woocommerce/product-updated
+**Description:** Handle WooCommerce product updated webhook
+**Headers:** Same as product-created
+**Body:** WooCommerce product data
+**Response:**
+```json
+{
+  "success": true,
+  "message": "product updated processed successfully"
+}
+```
+
+### POST /webhooks/woocommerce/product-deleted
+**Description:** Handle WooCommerce product deleted webhook
+**Headers:** Same as product-created
+**Body:** WooCommerce product data
+**Response:**
+```json
+{
+  "success": true,
+  "message": "product deleted processed successfully"
+}
+```
+
+### POST /webhooks/create
+**Description:** Create a new WooCommerce webhook
+**Body:**
+```json
+{
+  "storeId": "store_id",
+  "topic": "order.created",
+  "deliveryUrl": "https://yourapp.com/api/webhooks/woocommerce/order-created",
+  "secret": "webhook_secret_key",
+  "name": "Order Created Webhook"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Webhook created successfully",
+  "webhook": {
+    "_id": "webhook_id",
+    "storeId": "store_id",
+    "organizationId": "org_id",
+    "wooCommerceId": 142,
+    "name": "Order Created Webhook",
+    "topic": "order.created",
+    "status": "active",
+    "deliveryUrl": "https://yourapp.com/api/webhooks/woocommerce/order-created",
+    "secret": "webhook_secret_key",
+    "resource": "order",
+    "event": "created",
+    "hooks": [
+      "woocommerce_checkout_order_processed",
+      "woocommerce_api_create_order"
+    ],
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### GET /webhooks/list
+**Description:** List all webhooks
+**Query Parameters:**
+- `storeId` (optional): Filter by store ID
+- `organizationId` (optional): Filter by organization ID
+
+**Response:**
+```json
+{
+  "success": true,
+  "webhooks": [
+    {
+      "_id": "webhook_id",
+      "storeId": {
+        "name": "My Store",
+        "url": "https://mystore.com"
+      },
+      "name": "Order Created Webhook",
+      "topic": "order.created",
+      "status": "active",
+      "resource": "order",
+      "event": "created",
+      "failureCount": 0,
+      "lastDelivery": "2024-01-15T10:00:00Z",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /webhooks/:id
+**Description:** Get webhook by ID
+**Response:**
+```json
+{
+  "success": true,
+  "webhook": {
+    "_id": "webhook_id",
+    "storeId": {
+      "name": "My Store",
+      "url": "https://mystore.com"
+    },
+    "organizationId": "org_id",
+    "wooCommerceId": 142,
+    "name": "Order Created Webhook",
+    "topic": "order.created",
+    "status": "active",
+    "deliveryUrl": "https://yourapp.com/api/webhooks/woocommerce/order-created",
+    "secret": "webhook_secret_key",
+    "resource": "order",
+    "event": "created",
+    "hooks": [
+      "woocommerce_checkout_order_processed",
+      "woocommerce_api_create_order"
+    ],
+    "failureCount": 0,
+    "lastDelivery": "2024-01-15T10:00:00Z",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### PUT /webhooks/:id
+**Description:** Update webhook
+**Body:**
+```json
+{
+  "name": "Updated Order Webhook",
+  "status": "active",
+  "deliveryUrl": "https://newurl.com/webhook",
+  "secret": "new_secret_key"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Webhook updated successfully",
+  "webhook": {
+    "_id": "webhook_id",
+    "name": "Updated Order Webhook",
+    "status": "active",
+    "deliveryUrl": "https://newurl.com/webhook",
+    "secret": "new_secret_key",
+    "updatedAt": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+### DELETE /webhooks/:id
+**Description:** Delete webhook
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Webhook deleted successfully"
+}
+```
+
+### GET /webhooks/:id/deliveries
+**Description:** Get webhook delivery logs
+**Response:**
+```json
+{
+  "success": true,
+  "deliveries": [
+    {
+      "_id": "delivery_id",
+      "webhookId": "webhook_id",
+      "deliveryId": "delivery_123",
+      "topic": "order.created",
+      "resource": "order",
+      "event": "created",
+      "status": "success",
+      "responseCode": 200,
+      "responseMessage": "OK",
+      "duration": 150,
+      "createdAt": "2024-01-15T10:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /webhooks/:id/deliveries/:deliveryId
+**Description:** Get specific webhook delivery log
+**Response:**
+```json
+{
+  "success": true,
+  "delivery": {
+    "_id": "delivery_id",
+    "webhookId": "webhook_id",
+    "deliveryId": "delivery_123",
+    "topic": "order.created",
+    "resource": "order",
+    "event": "created",
+    "status": "success",
+    "responseCode": 200,
+    "responseMessage": "OK",
+    "requestHeaders": {
+      "x-wc-webhook-signature": "signature_hash",
+      "x-wc-webhook-topic": "order.created"
+    },
+    "requestBody": {
+      "id": 123,
+      "status": "pending"
+    },
+    "responseHeaders": {},
+    "responseBody": {
+      "success": true,
+      "message": "order created processed successfully"
+    },
+    "duration": 150,
+    "retryCount": 0,
+    "processedAt": "2024-01-15T10:00:00Z",
+    "createdAt": "2024-01-15T10:00:00Z"
+  }
+}
+```
+
+### PATCH /stores/:storeId/enable-webhooks
+**Description:** Enable webhooks for a store
+**Body:**
+```json
+{
+  "baseUrl": "https://yourapp.com/api/webhooks",
+  "secret": "webhook_secret_key",
+  "topics": [
+    "order.created",
+    "order.updated",
+    "customer.created",
+    "product.created"
+  ]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Webhooks enabled successfully",
+  "store": {
+    "_id": "store_id",
+    "name": "My Store",
+    "webhookSettings": {
+      "enabled": true,
+      "baseUrl": "https://yourapp.com/api/webhooks",
+      "secret": "webhook_secret_key",
+      "identifier": "store_id",
+      "topics": [
+        "order.created",
+        "order.updated",
+        "customer.created",
+        "product.created"
+      ]
+    }
+  }
+}
+```
+
+### PATCH /stores/:storeId/disable-webhooks
+**Description:** Disable webhooks for a store
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Webhooks disabled successfully",
+  "store": {
+    "_id": "store_id",
+    "webhookSettings": {
+      "enabled": false
+    }
+  }
+}
+```
+
+### PATCH /stores/:storeId/webhook-topics
+**Description:** Update webhook topics for a store
+**Body:**
+```json
+{
+  "topics": [
+    "order.created",
+    "order.updated",
+    "order.deleted",
+    "customer.created",
+    "customer.updated",
+    "product.created",
+    "product.updated"
+  ]
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Webhook topics updated successfully",
+  "store": {
+    "_id": "store_id",
+    "webhookSettings": {
+      "topics": [
+        "order.created",
+        "order.updated",
+        "order.deleted",
+        "customer.created",
+        "customer.updated",
+        "product.created",
+        "product.updated"
+      ]
+    }
+  }
+}
+```
